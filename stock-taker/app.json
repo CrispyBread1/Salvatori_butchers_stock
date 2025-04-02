@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "salvatori_stock_taker_app",
-    "slug": "salvatori_stock_taker_app",
+    "name": "stock-taker",
+    "slug": "stock-taker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
