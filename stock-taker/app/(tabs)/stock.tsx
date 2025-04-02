@@ -15,7 +15,7 @@ export default function StockScreen() {
 
   useEffect(() => {
     const fetchStock = async () => {
-      const { data, error } = await supabase.from('stock_items').select('*');
+      const { data, error } = await supabase.from('products').select('*');
       if (!error) setItems(data as StockItem[]); // ✅ Ensure correct type
     };
 
