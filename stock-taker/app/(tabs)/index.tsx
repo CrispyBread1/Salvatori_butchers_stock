@@ -15,7 +15,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {user ? (
         <>
-          <Text>Welcome, {user.email}!</Text>
+          <Text>Welcome, {user.name}!</Text>
           <Button title="Go to Stock Taking" onPress={() => router.push('/stock')} />
           <Button title="Logout" onPress={handleLogout} />
         </>

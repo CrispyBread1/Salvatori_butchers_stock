@@ -1,31 +1,57 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, Text, Button, FlatList } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusEffect } from '@react-navigation/native'; 
 import { router } from 'expo-router';
+import StockTakeForm from '@/components/StockTakeForm';
 
-interface StockItem {
+interface Product {
   id: number;
   name: string;
-  quantity: number;
+  product_category: string;
 }
 
 export default function StockScreen() {
-  const [items, setItems] = useState<StockItem[]>([]);
   const { user, loading } = useAuth();  
+  const [products, setProducts] = useState<{ [category: string]: Product[] }>({});
+  const [fetching, setFetching] = useState(true);
 
-  // Ensure hooks are always called in the same order
   const fetchStock = useCallback(async () => {
-    const { data, error } = await supabase.from('products').select('*');
-    if (!error) setItems(data as StockItem[]);
-  }, []);
+    if (!user) return;
 
-  // Ensure hooks are always called in the same order
+    setFetching(true);
+
+    try {
+      // Fetch the user's department (pseudo-code)
+      // const { data: profile } = await supabase.from('profiles').select('department').eq('id', user.id).single();
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        // .eq('department', profile?.department) // Uncomment if filtering by department
+        .order('product_category', { ascending: true });
+
+      if (!error && data) {
+        const groupedProducts = data.reduce((acc, product) => {
+          acc[product.product_category] = acc[product.product_category] || [];
+          acc[product.product_category].push(product);
+          return acc;
+        }, {} as { [category: string]: Product[] });
+
+        setProducts(groupedProducts);
+      }
+    } catch (error) {
+      console.error('Error fetching stock:', error);
+    }
+
+    setFetching(false);
+  }, [user]);
+
   useFocusEffect(
     useCallback(() => {
       if (user) {
-        // fetchStock();
+        fetchStock();
       }
     }, [user, fetchStock])
   );
@@ -38,18 +64,12 @@ export default function StockScreen() {
     }, [user, loading])
   );
 
-  // Return loading state AFTER hooks are defined
-  if (loading) return <Text>Loading...</Text>;
- 
+  if (loading || fetching) return <ActivityIndicator size="large" color="blue" />;
+  if (!user) return <Text>Please log in</Text>;
 
   return (
-    <View>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <Text>{item.name}: {item.quantity}</Text>}
-      />
-      <Button title="Refresh Stock" onPress={fetchStock} />
+    <View style={{ flex: 1, padding: 10 }}>
+      <StockTakeForm products={products} refreshStock={fetchStock} />
     </View>
   );
 }

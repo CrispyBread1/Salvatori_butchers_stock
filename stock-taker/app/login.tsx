@@ -14,7 +14,7 @@ export default function LoginScreen() {
     if (error) Alert.alert('Error', error.message);
     else 
       Alert.alert('Success', 'Logged in successfully');
-      router.push('/(tabs)/dashboard');
+      router.push('/');
   };
 
   return (
