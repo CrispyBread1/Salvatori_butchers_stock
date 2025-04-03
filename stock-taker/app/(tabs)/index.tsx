@@ -16,12 +16,12 @@ export default function HomeScreen() {
       {user ? (
         <>
           <Text>Welcome, {user.email}!</Text>
-          <Button title="Go to Stock Taking" onPress={() => router.push('/stockTake/stock')} />
+          <Button title="Go to Stock Taking" onPress={() => router.push('/stock')} />
           <Button title="Logout" onPress={handleLogout} />
         </>
       ) : (
         <>
-          <Text>Please log in</Text>
+          <Text>Welcome, Please log in to continue</Text>
           <Button title="Go to Login" onPress={() => router.push('/login')} />
         </>
       )}

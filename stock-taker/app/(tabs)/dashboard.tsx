@@ -19,10 +19,15 @@ export default function StockScreen() {
       {user ? (
         <>
           <Text>Welcome to the dashboard, {user.email}!</Text>
+          <Button title="Stock take" onPress={() => router.push('/stock')} />
         </>
-      ) : (
+      
+    
+    
+    
+    ) : (
         <>
-          <Text>Please log in</Text>
+          <Text>To view the Dashboard Please log in</Text>
           <Button title="Go to Login" onPress={() => router.push('/login')} />
         </>
       )}
