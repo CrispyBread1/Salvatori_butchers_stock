@@ -15,6 +15,13 @@ export function useAuth() {
   const [user, setUser] = useState<UserObj | null>(null);
   const [loading, setLoading] = useState(true); // 🔹 Add loading state
 
+  useEffect(()=> {
+    if (!userAuth) {
+      setUser(null)
+    }
+
+  }, [userAuth])
+
   useEffect(() => {
     const authUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -37,6 +44,8 @@ export function useAuth() {
       authListener.subscription?.unsubscribe(); // ✅ Prevent memory leaks
     };
   }, []);
+
+
 
   const fetchUser = useCallback(async (user_id: string) => {
     const { data, error } = await supabase
