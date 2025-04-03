@@ -1,23 +1,24 @@
+import { useState, useCallback } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabaseClient';
-import { useRouter } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
+import { useFocusEffect } from '@react-navigation/native'; 
+import { router } from 'expo-router';
 
-export default function HomeScreen() {
+
+export default function StockScreen() {
   const { user } = useAuth();
-  const router = useRouter();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
+  
+
+
+
 
   return (
     <View style={styles.container}>
       {user ? (
         <>
-          <Text>Welcome, {user.email}!</Text>
-          <Button title="Go to Stock Taking" onPress={() => router.push('/stockTake/stock')} />
-          <Button title="Logout" onPress={handleLogout} />
+          <Text>Welcome to the dashboard, {user.email}!</Text>
         </>
       ) : (
         <>
@@ -34,5 +35,4 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-});
+},});

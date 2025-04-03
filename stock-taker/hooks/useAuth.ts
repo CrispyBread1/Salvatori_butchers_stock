@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { User } from '@supabase/supabase-js'; // ✅ Import User type
+import { User } from '@supabase/supabase-js'; // Import User type
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null); // ✅ Fix typing
+  const [user, setUser] = useState<User | null>(null); 
 
   useEffect(() => {
     const fetchUser = async () => {

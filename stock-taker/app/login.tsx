@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, TextInput, Button, Alert } from 'react-native';
 import { supabase } from '@/utils/supabaseClient';
+import { router } from 'expo-router';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -9,8 +10,11 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
+
     if (error) Alert.alert('Error', error.message);
-    else Alert.alert('Success', 'Logged in successfully');
+    else 
+      Alert.alert('Success', 'Logged in successfully');
+      router.push('/(tabs)/dashboard');
   };
 
   return (
