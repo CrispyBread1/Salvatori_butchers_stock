@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Button, ScrollView, Alert, TextInput } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 
@@ -10,11 +10,12 @@ interface Product {
 
 interface Props {
   products: { [category: string]: Product[] };
-  refreshStock: () => void;
+  resetUI: () => void;
 }
 
-export default function StockTakeForm({ products, refreshStock }: Props) {
-  const { control, handleSubmit, reset } = useForm();
+export default function StockTakeForm({ products, resetUI }: Props) {
+  const { control, handleSubmit, setValue, watch } = useForm();
+  const [isEdited, setIsEdited] = useState(false); // Track if any input is edited
 
   const onSubmit = (data: Record<string, string>) => {
     Alert.alert(
@@ -27,13 +28,35 @@ export default function StockTakeForm({ products, refreshStock }: Props) {
     );
   };
 
+  // Check if any form field is edited by comparing initial values with current values
+  const handleInputChange = (id: string, newValue: string) => {
+    // Check if the new value is different from the initial value
+    setIsEdited(true); // Mark as edited
+  };
+
+  const handleCancel = () => {
+    if (isEdited) {
+      Alert.alert(
+        'Unsaved Changes',
+        'Are you sure you want to cancel? You have unsaved changes.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Yes', onPress: () => resetUI() } // Reset the form to clear inputs
+        ]
+      );
+    } else {
+      resetUI(); // No unsaved changes, reset form directly
+    }
+  };
+
   const submitStockTake = async (formData: Record<string, string>) => {
     console.log('Submitting stock take:', formData);
-    // TODO: Replace with actual Supabase logic
+    // TODO: Replace with actual logic for submitting the stock take
   };
 
   return (
     <ScrollView style={{ padding: 20 }}>
+      <Button title="Cancel" onPress={handleCancel} />
       <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
         Stock Take for {new Date().toLocaleDateString()}
       </Text>
@@ -65,7 +88,10 @@ export default function StockTakeForm({ products, refreshStock }: Props) {
                     }}
                     keyboardType="numeric"
                     value={value}
-                    onChangeText={(text) => onChange(text)}
+                    onChangeText={(text) => {
+                      onChange(text);
+                      handleInputChange(String(product.id), text); // Check if input is edited
+                    }}
                   />
                 )}
               />

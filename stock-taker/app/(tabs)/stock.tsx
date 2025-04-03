@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Button } from 'react-native';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusEffect } from '@react-navigation/native'; 
@@ -16,8 +16,9 @@ export default function StockScreen() {
   const { user, loading } = useAuth();  
   const [products, setProducts] = useState<{ [category: string]: Product[] }>({});
   const [fetching, setFetching] = useState(true);
+  const [category, setCategory] = useState('');
 
-  const fetchStock = useCallback(async () => {
+  const fetchStock = useCallback(async (category: string) => {
     if (!user) return;
 
     setFetching(true);
@@ -29,7 +30,7 @@ export default function StockScreen() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        // .eq('department', profile?.department) // Uncomment if filtering by department
+        .eq('stock_category', category) 
         .order('product_category', { ascending: true });
 
       if (!error && data) {
@@ -50,26 +51,41 @@ export default function StockScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (user) {
-        fetchStock();
-      }
-    }, [user, fetchStock])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
       if (!loading && !user) {
         router.replace('/');
       }
     }, [user, loading])
   );
 
-  if (loading || fetching) return <ActivityIndicator size="large" color="blue" />;
+  if (loading) return <ActivityIndicator size="large" color="blue" />;
   if (!user) return <Text>Please log in</Text>;
+
+  const handleFreshCategory = () => {
+    fetchStock('fresh')
+    setCategory('fresh')
+  }
+  const handleFrozenCategory = () => {
+    fetchStock('frozen')
+    setCategory('fresh')
+  }
+  const handleDryCategory = () => {
+    fetchStock('dry')
+    setCategory('fresh')
+  }
+  const resetUI = () => {
+    setCategory('')
+    setProducts({})
+  }
+
+
 
   return (
     <View style={{ flex: 1, padding: 10 }}>
-      <StockTakeForm products={products} refreshStock={fetchStock} />
+      {!category && <Button title="Fresh" onPress={handleFreshCategory} />}
+      {!category && <Button title="Frozen" onPress={handleFrozenCategory} />}
+      {!category && <Button title="Dry" onPress={handleDryCategory} />}
+
+      {category && <StockTakeForm products={products} resetUI={resetUI} />}
     </View>
   );
 }
