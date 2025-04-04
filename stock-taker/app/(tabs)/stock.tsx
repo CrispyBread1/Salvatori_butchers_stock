@@ -77,6 +77,14 @@ export default function StockScreen() {
     setProducts({})
   }
 
+  const submitStockTake = async (formData: Record<string, string>, timestamp: string) => {
+    console.log('Submitting stock take:', formData, timestamp);
+
+    // TODO: Replace with actual logic for submitting the stock take
+  };
+
+
+
 
 
   return (
@@ -85,7 +93,7 @@ export default function StockScreen() {
       {!category && <Button title="Frozen" onPress={handleFrozenCategory} />}
       {!category && <Button title="Dry" onPress={handleDryCategory} />}
 
-      {category && <StockTakeForm products={products} resetUI={resetUI} />}
+      {category && <StockTakeForm products={products} resetUI={resetUI} submitStockTake={submitStockTake} />}
     </View>
   );
 }

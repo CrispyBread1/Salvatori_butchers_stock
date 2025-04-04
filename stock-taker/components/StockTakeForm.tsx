@@ -12,10 +12,11 @@ interface Product {
 interface Props {
   products: { [category: string]: Product[] };
   resetUI: () => void;
+  submitStockTake: (formData: Record<string, string>, timestamp: string) => void;
 }
 
-export default function StockTakeForm({ products, resetUI }: Props) {
-  const { control, handleSubmit, setValue, watch } = useForm();
+export default function StockTakeForm({ products, resetUI, submitStockTake }: Props) {
+  const { control, handleSubmit } = useForm();
   const [isEdited, setIsEdited] = useState(false); // Track if any input is edited
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<Record<string, string> | null>(null);
@@ -71,14 +72,7 @@ export default function StockTakeForm({ products, resetUI }: Props) {
         ]
       );
   }; // Reset the form to clear inputs
-      
   
-
-  const submitStockTake = async (formData: Record<string, string>, timestamp: string) => {
-    console.log('Submitting stock take:', formData, timestamp);
-
-    // TODO: Replace with actual logic for submitting the stock take
-  };
 
   return (
     <ScrollView style={{ padding: 20 }}>
