@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, Button, ScrollView, Alert, TextInput } from 'react-native';
+import { View, Text, Button, ScrollView, Alert, TextInput, Platform } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface Product {
   id: number;
@@ -16,16 +17,20 @@ interface Props {
 export default function StockTakeForm({ products, resetUI }: Props) {
   const { control, handleSubmit, setValue, watch } = useForm();
   const [isEdited, setIsEdited] = useState(false); // Track if any input is edited
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<Record<string, string> | null>(null);
 
   const onSubmit = (data: Record<string, string>) => {
-    Alert.alert(
-      'Confirm Submission',
-      'Are you sure you want to submit this stock take?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Submit', onPress: () => submitStockTake(data) }
-      ]
-    );
+    if (isEdited) {
+      Alert.alert(
+        'Confirm Submission',
+        'Are you sure you want to submit this stock take?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Submit', onPress: () => checkStockDate(data) }
+        ]
+      );
+    }
   };
 
   // Check if any form field is edited by comparing initial values with current values
@@ -49,14 +54,53 @@ export default function StockTakeForm({ products, resetUI }: Props) {
     }
   };
 
-  const submitStockTake = async (formData: Record<string, string>) => {
-    console.log('Submitting stock take:', formData);
+  const checkStockDate = (formData: Record<string, string>) => {
+
+      const timestamp = new Date().toISOString();
+      Alert.alert(
+        'Take Date',
+        'Was this completed today?',
+        [
+          { text: 'No', onPress: () => {
+            setPendingFormData(formData);
+            setShowDatePicker(true);
+          } },
+          { text: 'Yes', onPress: () => {
+            submitStockTake(formData, timestamp)
+          } } // Reset the form to clear inputs
+        ]
+      );
+  }; // Reset the form to clear inputs
+      
+  
+
+  const submitStockTake = async (formData: Record<string, string>, timestamp: string) => {
+    console.log('Submitting stock take:', formData, timestamp);
+
     // TODO: Replace with actual logic for submitting the stock take
   };
 
   return (
     <ScrollView style={{ padding: 20 }}>
       <Button title="Cancel" onPress={handleCancel} />
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'inline' : 'default'}
+          onChange={(event, date) => {
+            setShowDatePicker(false); // close picker
+            if (date && pendingFormData) {
+              const chosenTimestamp = new Date(date).toISOString();
+              submitStockTake(pendingFormData, chosenTimestamp);
+              setPendingFormData(null); // clear it out
+            }
+          }}
+        />
+      )}
+
+
       <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
         Stock Take for {new Date().toLocaleDateString()}
       </Text>
