@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Button } from 'react-native';
+import { View, Text, ActivityIndicator, Button, StyleSheet } from 'react-native';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusEffect } from '@react-navigation/native'; 
@@ -88,12 +88,28 @@ export default function StockScreen() {
 
 
   return (
-    <View style={{ flex: 1, padding: 10 }}>
-      {!category && <Button title="Fresh" onPress={handleFreshCategory} />}
-      {!category && <Button title="Frozen" onPress={handleFrozenCategory} />}
-      {!category && <Button title="Dry" onPress={handleDryCategory} />}
+    <View style={styles.container}>
+      {!category && (
+        <View style={styles.buttonWrapper}>
+          <Button title="Fresh" onPress={handleFreshCategory} />
+          <Button title="Frozen" onPress={handleFrozenCategory} />
+          <Button title="Dry" onPress={handleDryCategory} />
+        </View>
+      )}
 
       {category && <StockTakeForm products={products} resetUI={resetUI} submitStockTake={submitStockTake} />}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonWrapper: {
+    width: '70%', // All buttons will have the same width
+    gap: 20,
+  },
+});

@@ -35,18 +35,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: 'Me',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
       {!user && <Tabs.Screen
         name="stock"
         options={{
           title: 'Stock Take',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="playlist-add" color={color} />,
+          
           href: null,
         }}
       />}
@@ -54,7 +48,7 @@ export default function TabLayout() {
         name="stock"
         options={{
           title: 'Stock Take',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="playlist-add" color={color} />,
         }}
       />}
     </Tabs>

@@ -15,13 +15,20 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {user ? (
         <>
-          <Text>Welcome, {user.name}!</Text>
-          <Button title="Go to Stock Taking" onPress={() => router.push('/stock')} />
-          <Button title="Logout" onPress={handleLogout} />
+          <View style={styles.top}>
+            <Text style={styles.welcome}>Welcome, {user.name}!</Text>
+            <Button title="Go to Stock Taking" onPress={() => router.push('/stock')} />
+          </View>
+
+          <View style={styles.spacer} />
+
+          <View style={styles.bottom}>
+            <Button title="Logout" onPress={handleLogout} />
+          </View>
         </>
       ) : (
         <>
-          <Text>Welcome, Please log in to continue</Text>
+          <Text style={styles.welcome}>Welcome, Please log in to continue</Text>
           <Button title="Go to Login" onPress={() => router.push('/login')} />
         </>
       )}
@@ -32,7 +39,22 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    padding: 20,
+  },
+  top: {
     alignItems: 'center',
+    marginTop: 60,
+  },
+  welcome: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  spacer: {
+    flex: 1, // pushes bottom content down
+  },
+  bottom: {
+    alignItems: 'center',
+    marginBottom: 40,
   },
 });
+
