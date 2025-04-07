@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
   },
   buttonWrapper: {
     width: '70%', // All buttons will have the same width
