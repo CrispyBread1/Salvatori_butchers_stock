@@ -81,11 +81,11 @@ export default function StockScreen() {
   }
   const handleFrozenCategory = () => {
     fetchStock('frozen')
-    setCategory('fresh')
+    setCategory('frozen')
   }
   const handleDryCategory = () => {
     fetchStock('dry')
-    setCategory('fresh')
+    setCategory('dry')
   }
   const resetUI = () => {
     setCategory('')
@@ -97,8 +97,8 @@ export default function StockScreen() {
     try {
       await submitStockTakeEntry(formData, category, timestamp, user.id);
   
-      const todayISO = new Date().toISOString().split('T')[0];
-      const submittedDay = timestamp.split('T')[0];
+      const todayISO = new Date().toISOString();
+      const submittedDay = timestamp;
   
       if (submittedDay === todayISO) {
         await updateProductStocks(formData);
