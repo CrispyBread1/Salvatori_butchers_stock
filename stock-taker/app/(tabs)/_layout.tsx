@@ -45,12 +45,18 @@ export default function TabLayout() {
         }}
       />}
       {user && <Tabs.Screen
-        name="stock"
-        options={{
-          title: 'Stock Take',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="playlist-add" color={color} />,
-        }}
-      />}
+            name="deliveries"
+            options={{
+              title: 'Deliveries',
+              tabBarIcon: ({ color }) => <IconSymbol size={28} name="add-box" color={color} />,
+      }} />}
+
+      {user && <Tabs.Screen
+            name="stock"
+            options={{
+              title: 'Stock Take',
+              tabBarIcon: ({ color }) => <IconSymbol size={28} name="playlist-add" color={color} />,
+            }} />}      
     </Tabs>
   );
 }
