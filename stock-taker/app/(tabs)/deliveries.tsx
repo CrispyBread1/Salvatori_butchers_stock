@@ -3,12 +3,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import BarcodeScanner from '@/components/BarcodeScanner';
 
 export default function DeliveriesScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [barcodeScan, setBarcodeScan] = useState(false);
   const [enterManually, setEnterManually] = useState(false);
+  const [scannedData, setScannedData] = useState<string | null>(null);
 
   const handleScanBarcode = () => {
     setBarcodeScan(true)
@@ -20,12 +22,35 @@ export default function DeliveriesScreen() {
     return
   }
 
+  const handleUIReset = () => {
+    setBarcodeScan(false)
+    setEnterManually(false)
+  }
+
+  const handleBarcodeScanned = (data: string) => {
+    console.log('Barcode scanned:', data);
+    setScannedData(data);
+  };
+
   return (
     <View style={styles.container}>
-      {(barcodeScan || enterManually) && (
+      {(!barcodeScan && !enterManually) && (
         <View style={styles.buttonWrapper}>
           <Button title="Scan Barcode" onPress={handleScanBarcode} />
           <Button title="Enter Manually" onPress={handleEnterManually} />
+        </View>
+      )}
+      {(barcodeScan || enterManually) && (
+        <View style={styles.buttonWrapper}>
+        <Button title="Back" onPress={handleUIReset} />
+      </View>
+      )}
+
+      {barcodeScan && <BarcodeScanner onScanned={handleBarcodeScanned} />}
+
+      {scannedData && (
+        <View style={{ padding: 20 }}>
+          <Text style={{ fontSize: 18 }}>Scanned Data: {scannedData}</Text>
         </View>
       )}
     </View>
