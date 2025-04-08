@@ -54,7 +54,7 @@ export default function StockTakeForm({ products, resetUI, submitStockTake }: Pr
           setShowDatePicker(true);
         },
       },
-      { text: 'Yes', onPress: () => submitStockTake(formData, timestamp) },
+      { text: 'Yes', onPress: () => submitStockTake(configureEmptyOptions(formData), timestamp) },
     ]);
   };
 
@@ -66,6 +66,17 @@ export default function StockTakeForm({ products, resetUI, submitStockTake }: Pr
       ]);
     }
   };
+
+  const configureEmptyOptions = (formData: Record<string, string>): Record<string, string> => {
+    const updatedData: Record<string, string> = {};
+  
+    Object.entries(formData).forEach(([key, value]) => {
+      updatedData[key] = value.trim() === '' ? '0.00' : value;
+    });
+  
+    return updatedData;
+  };
+  
 
   return (
     <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
@@ -96,9 +107,9 @@ export default function StockTakeForm({ products, resetUI, submitStockTake }: Pr
                 <Text style={styles.productName}>{product.name}</Text>
                 <Controller
                   control={control}
-                  defaultValue="0.00"
+                  defaultValue=""
                   name={String(product.id)}
-                  rules={{ required: true }}
+                  rules={{ required: false }}
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       style={styles.input}
@@ -132,6 +143,7 @@ const titleCaseWord = (word: string) => {
   if (!word) return word;
   return word[0].toUpperCase() + word.substr(1).toLowerCase();
 }
+
 
 const styles = StyleSheet.create({
   scrollContainer: {

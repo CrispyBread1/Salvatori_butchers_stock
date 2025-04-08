@@ -1,6 +1,6 @@
 import { supabase } from '@/utils/supabaseClient';
 
-export async function updateProductStocks(data: Record<number, number>) {
+export async function updateProductStocks(data: Record<string, string>) {
   const updates = Object.entries(data).map(([product_id, stock_count]) => ({
     id: parseInt(product_id),
     stock_count: stock_count,

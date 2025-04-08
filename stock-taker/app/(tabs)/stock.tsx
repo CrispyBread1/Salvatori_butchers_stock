@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Button, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, Button, StyleSheet, Alert } from 'react-native';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusEffect } from '@react-navigation/native'; 
 import { router } from 'expo-router';
 import StockTakeForm from '@/components/StockTakeForm';
+import { submitStockTakeEntry } from '@/utils/stockTakes';
+import { updateProductStocks } from '@/utils/updateProducts';
 
 interface Product {
   id: number;
@@ -17,6 +19,7 @@ export default function StockScreen() {
   const [products, setProducts] = useState<{ [category: string]: Product[] }>({});
   const [fetching, setFetching] = useState(true);
   const [category, setCategory] = useState('');
+  // const [isReady, setIsReady] = useState(false);
 
   const fetchStock = useCallback(async (category: string) => {
     if (!user) return;
@@ -49,15 +52,27 @@ export default function StockScreen() {
     setFetching(false);
   }, [user]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!loading && !user) {
-        router.replace('/');
-      }
-    }, [user, loading])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     if (!loading) {
+  //       if (!user) {
+  //         router.replace('/');
+  //       } else {
+  //         setIsReady(true); // we're authenticated and can show the screen
+  //       }
+  //     }
+  //   }, [loading, user])
+  // );
 
-  if (loading) return <ActivityIndicator size="large" color="blue" />;
+
+  // if (!isReady) {
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+  //       <ActivityIndicator size="large" color="blue" />
+  //     </View>
+  //   );
+  // }
+  // if (!loading) return <ActivityIndicator size="large" color="blue" />;
   if (!user) return <Text>Please log in</Text>;
 
   const handleFreshCategory = () => {
@@ -79,7 +94,21 @@ export default function StockScreen() {
 
   const submitStockTake = async (formData: Record<string, string>, timestamp: string) => {
     console.log('Submitting stock take:', formData, timestamp);
-
+    try {
+      await submitStockTakeEntry(formData, category, timestamp, user.id);
+  
+      const todayISO = new Date().toISOString().split('T')[0];
+      const submittedDay = timestamp.split('T')[0];
+  
+      if (submittedDay === todayISO) {
+        await updateProductStocks(formData);
+      }
+  
+      Alert.alert('Success', 'Stock take submitted successfully.');
+      resetUI();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to submit stock take.');
+    }
     // TODO: Replace with actual logic for submitting the stock take
   };
 
