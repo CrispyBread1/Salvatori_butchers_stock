@@ -44,6 +44,15 @@ export default function TabLayout() {
           href: null,
         }}
       />}
+      {!user && <Tabs.Screen
+        name="deliveries"
+        options={{
+          title: 'Deliveries',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="add-box" color={color} />,
+          
+          href: null,
+        }}
+      />}
       {user && <Tabs.Screen
             name="deliveries"
             options={{

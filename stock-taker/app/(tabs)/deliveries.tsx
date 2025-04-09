@@ -46,7 +46,7 @@ export default function DeliveriesScreen() {
       </View>
       )}
 
-      {barcodeScan && <BarcodeScanner onScanned={handleBarcodeScanned} />}
+      {(barcodeScan || !scannedData) && <BarcodeScanner onScanned={handleBarcodeScanned} />}
 
       {scannedData && (
         <View style={{ padding: 20 }}>
