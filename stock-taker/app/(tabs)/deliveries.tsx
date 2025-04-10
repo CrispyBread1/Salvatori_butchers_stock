@@ -46,7 +46,11 @@ export default function DeliveriesScreen() {
       </View>
       )}
 
-      {(barcodeScan || !scannedData) && <BarcodeScanner onScanned={handleBarcodeScanned} />}
+      {(barcodeScan || scannedData) && (
+        <View style={styles.scannerWrapper}>
+          <BarcodeScanner onScanned={handleBarcodeScanned} />
+        </View>
+      )}
 
       {scannedData && (
         <View style={{ padding: 20 }}>
@@ -82,6 +86,11 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     width: '70%', // All buttons will have the same width
     gap: 20,
+  },
+  scannerWrapper: {
+    height: '60%', // 60% of the screen height
+    width: '90%',
+    alignSelf: 'center',
   },
 });
 

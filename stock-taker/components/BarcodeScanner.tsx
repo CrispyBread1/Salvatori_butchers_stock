@@ -84,6 +84,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center', // center the scanning box vertically
   },
   centered: {
     flex: 1,
@@ -96,17 +98,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   camera: {
-    height: screenHeight * 0.7,
-    width: '100%',
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    height: '50%', // reduced from 0.7 to 0.6
+    width: '90%', // optional: make it narrower if desired
+    borderRadius: 16,
     overflow: 'hidden',
   },
   controls: {
-    flex: 1,
+    marginTop: 20,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingVertical: 20,
     gap: 12,
   },
   button: {
@@ -124,3 +124,4 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
+
