@@ -52,27 +52,6 @@ export default function StockScreen() {
     setFetching(false);
   }, [user]);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (!loading) {
-  //       if (!user) {
-  //         router.replace('/');
-  //       } else {
-  //         setIsReady(true); // we're authenticated and can show the screen
-  //       }
-  //     }
-  //   }, [loading, user])
-  // );
-
-
-  // if (!isReady) {
-  //   return (
-  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-  //       <ActivityIndicator size="large" color="blue" />
-  //     </View>
-  //   );
-  // }
-  // if (!loading) return <ActivityIndicator size="large" color="blue" />;
   if (!user) return <Text>Please log in</Text>;
 
   const handleFreshCategory = () => {

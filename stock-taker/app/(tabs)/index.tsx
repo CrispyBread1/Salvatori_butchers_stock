@@ -29,7 +29,7 @@ export default function HomeScreen() {
       ) : (
         <>
           <Text style={styles.welcome}>Welcome, Please log in to continue</Text>
-          <Button title="Go to Login" onPress={() => router.push('/login')} />
+          <Button title="Login" onPress={() => router.push('/login')} />
         </>
       )}
     </View>
