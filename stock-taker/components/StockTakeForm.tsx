@@ -3,12 +3,17 @@ import {
   View,
   Text,
   ScrollView,
+  Alert,
+  TextInput,
+  Platform,
   StyleSheet,
   Pressable,
+  KeyboardAvoidingView,
   ActivityIndicator,
-  TextInput,
+  ToastAndroid,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface Product {
   id: number;
@@ -18,119 +23,132 @@ interface Product {
 
 interface Props {
   products: { [category: string]: Product[] };
+  resetUI: () => void;
+  submitStockTake: (formData: Record<string, string>, timestamp: string) => void;
   isLoading?: boolean;
 }
 
-export default function PaginatedStockTakeForm({ 
+export default function StockTakeForm({ 
   products, 
+  resetUI, 
+  submitStockTake,
   isLoading = false 
 }: Props) {
-  const { control } = useForm();
+  const { control, handleSubmit, reset, formState: { isDirty } } = useForm();
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<Record<string, string> | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [flatProducts, setFlatProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<{ [category: string]: Product[] }>(products);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 10;
-
-  // Flatten the products object into an array on component mount
-  useEffect(() => {
-    const flattenedProducts: Product[] = [];
-    Object.entries(products).forEach(([category, items]) => {
-      items.forEach(product => {
-        flattenedProducts.push({
-          ...product,
-          product_category: category
-        });
-      });
-    });
-    setFlatProducts(flattenedProducts);
-    setFilteredProducts(flattenedProducts);
-  }, [products]);
+  // Use the form's built-in isDirty state instead of manual tracking
+  const isEdited = isDirty;
 
   // Update filtered products when search query changes
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      setFilteredProducts(flatProducts);
-      setCurrentPage(1); // Reset to first page when clearing search
+      setFilteredProducts(products);
       return;
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = flatProducts.filter(product => 
-      product.name.toLowerCase().includes(query)
-    );
+    const filtered: { [category: string]: Product[] } = {};
+
+    Object.entries(products).forEach(([category, items]) => {
+      const matchingProducts = items.filter(product => 
+        product.name.toLowerCase().includes(query)
+      );
+      
+      if (matchingProducts.length > 0) {
+        filtered[category] = matchingProducts;
+      }
+    });
 
     setFilteredProducts(filtered);
-    setCurrentPage(1); // Reset to first page when search changes
-  }, [searchQuery, flatProducts]);
+  }, [searchQuery, products]);
 
-  // Get current products for the current page
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  // Function to handle back/cancel button
+  const handleCancel = () => {
+    if (isEdited) {
+      Alert.alert('Unsaved Changes', 'Are you sure you want to cancel? All entries will be lost.', [
+        { text: 'Stay', style: 'cancel' },
+        { text: 'Discard Changes', onPress: resetUI },
+      ]);
+    } else {
+      resetUI();
+    }
+  };
+
+  // Check if the stock take was completed today or on another date
+  const checkStockDate = (formData: Record<string, string>) => {
+    const timestamp = new Date().toISOString();
+    Alert.alert('Stock Take Date', 'Was this stock take completed today?', [
+      {
+        text: 'No, Select Date',
+        onPress: () => {
+          setPendingFormData(configureEmptyOptions(formData));
+          setShowDatePicker(true);
+        },
+      },
+      { 
+        text: 'Yes, Today', 
+        onPress: () => {
+          if (Platform.OS === 'android') {
+            ToastAndroid.show('Submitting stock take...', ToastAndroid.SHORT);
+          }
+          submitStockTake(configureEmptyOptions(formData), timestamp);
+        }
+      },
+    ]);
+  };
+
+  // Handle form submission
+  const onSubmit = (data: Record<string, string>) => {
+    if (isEdited) {
+      Alert.alert('Confirm Submission', 'Are you sure you want to submit this stock take?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Submit', onPress: () => checkStockDate(data) },
+      ]);
+    }
+  };
+
+  // Convert empty values to "0.00" and validate numeric inputs
+  const configureEmptyOptions = (formData: Record<string, string>): Record<string, string> => {
+    const updatedData: Record<string, string> = {};
   
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-
-  // Change page
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+    Object.entries(formData).forEach(([key, value]) => {
+      // Handle empty values
+      if (!value || value.trim() === '') {
+        updatedData[key] = '0.00';
+      } 
+      // Ensure proper decimal format
+      else {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          updatedData[key] = numValue.toFixed(2);
+        } else {
+          updatedData[key] = '0.00';
+        }
+      }
+    });
+  
+    return updatedData;
+  };
+  
+  // Handle date picker change
+  const handleDateChange = (event: any, date?: Date) => {
+    setShowDatePicker(false);
+    
+    if (date && pendingFormData) {
+      setSelectedDate(date);
+      submitStockTake(pendingFormData, date.toISOString());
+      setPendingFormData(null);
+    }
+  };
 
   // Clear search function
   const clearSearch = () => {
     setSearchQuery('');
-  };
-
-  // Generate page numbers
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      // Show all page numbers if total pages is less than or equal to max visible pages
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      // Always show first page
-      pageNumbers.push(1);
-      
-      // Calculate start and end of visible pages
-      let startPage = Math.max(2, currentPage - 1);
-      let endPage = Math.min(totalPages - 1, currentPage + 1);
-      
-      // Ensure we always show up to maxVisiblePages - 2 (for first and last page)
-      if (endPage - startPage < maxVisiblePages - 3) {
-        if (currentPage < totalPages / 2) {
-          // Closer to start, show more pages after current
-          endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 3);
-        } else {
-          // Closer to end, show more pages before current
-          startPage = Math.max(2, endPage - (maxVisiblePages - 3));
-        }
-      }
-      
-      // Add ellipsis if needed before visible pages
-      if (startPage > 2) {
-        pageNumbers.push('...');
-      }
-      
-      // Add visible pages
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-      
-      // Add ellipsis if needed after visible pages
-      if (endPage < totalPages - 1) {
-        pageNumbers.push('...');
-      }
-      
-      // Always show last page
-      pageNumbers.push(totalPages);
-    }
-    
-    return pageNumbers;
   };
 
   if (isLoading) {
@@ -143,10 +161,23 @@ export default function PaginatedStockTakeForm({
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      style={styles.container}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+          />
+        )}
+
         <Text style={styles.headerText}>
-          Stock Take
+          Stock Take for {selectedDate.toLocaleDateString()}
         </Text>
         
         {/* Search Bar */}
@@ -165,15 +196,7 @@ export default function PaginatedStockTakeForm({
           )}
         </View>
 
-        {/* Pagination Stats */}
-        <View style={styles.paginationStats}>
-          <Text style={styles.statsText}>
-            Showing {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
-          </Text>
-        </View>
-
-        {/* Products List */}
-        {currentProducts.length === 0 ? (
+        {Object.entries(filteredProducts).length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
               {searchQuery ? 'No products found matching your search' : 'No products found'}
@@ -185,91 +208,62 @@ export default function PaginatedStockTakeForm({
             )}
           </View>
         ) : (
-          <View style={styles.productsContainer}>
-            {currentProducts.map((product) => (
-              <View key={product.id} style={styles.productRow}>
-                <View style={styles.productInfo}>
+          Object.entries(filteredProducts).map(([category, items]) => (
+            <View key={category} style={styles.categoryBlock}>
+              <Text style={styles.categoryHeader}>{titleCaseWord(category)}</Text>
+              {items.map((product) => (
+                <View key={product.id} style={styles.productRow}>
                   <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.categoryName}>{titleCaseWord(product.product_category)}</Text>
+                  <Controller
+                    control={control}
+                    defaultValue=""
+                    name={String(product.id)}
+                    rules={{ 
+                      pattern: {
+                        value: /^[0-9]*\.?[0-9]*$/,
+                        message: "Please enter a valid number"
+                      }
+                    }}
+                    render={({ field: { onChange, value }, fieldState: { error } }) => (
+                      <View style={styles.inputContainer}>
+                        <TextInput
+                          style={[
+                            styles.input,
+                            error && styles.inputError
+                          ]}
+                          keyboardType="decimal-pad"
+                          value={value}
+                          onChangeText={onChange}
+                          placeholder="0.00"
+                          placeholderTextColor="#aaa"
+                        />
+                        {error && (
+                          <Text style={styles.errorText}>Invalid number</Text>
+                        )}
+                      </View>
+                    )}
+                  />
                 </View>
-                <Controller
-                  control={control}
-                  defaultValue=""
-                  name={String(product.id)}
-                  rules={{ 
-                    pattern: {
-                      value: /^[0-9]*\.?[0-9]*$/,
-                      message: "Please enter a valid number"
-                    }
-                  }}
-                  render={({ field: { onChange, value }, fieldState: { error } }) => (
-                    <View style={styles.inputContainer}>
-                      <TextInput
-                        style={[
-                          styles.input,
-                          error && styles.inputError
-                        ]}
-                        keyboardType="decimal-pad"
-                        value={value}
-                        onChangeText={onChange}
-                        placeholder="0.00"
-                        placeholderTextColor="#aaa"
-                      />
-                      {error && (
-                        <Text style={styles.errorText}>Invalid number</Text>
-                      )}
-                    </View>
-                  )}
-                />
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          ))
         )}
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <View style={styles.paginationContainer}>
-            <Pressable 
-              style={[styles.pageButton, currentPage === 1 && styles.disabledButton]}
-              onPress={() => currentPage > 1 && paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <Text style={styles.pageButtonText}>Previous</Text>
-            </Pressable>
-            
-            {getPageNumbers().map((number, index) => (
-              <Pressable 
-                key={index}
-                style={[
-                  styles.pageNumButton, 
-                  number === currentPage && styles.activePageButton,
-                  number === '...' && styles.ellipsis
-                ]}
-                onPress={() => typeof number === 'number' && paginate(number)}
-                disabled={number === '...'}
-              >
-                <Text 
-                  style={[
-                    styles.pageNumText,
-                    number === currentPage && styles.activePageText
-                  ]}
-                >
-                  {number}
-                </Text>
-              </Pressable>
-            ))}
-            
-            <Pressable 
-              style={[styles.pageButton, currentPage === totalPages && styles.disabledButton]}
-              onPress={() => currentPage < totalPages && paginate(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <Text style={styles.pageButtonText}>Next</Text>
-            </Pressable>
-          </View>
-        )}
+        <View style={styles.buttonContainer}>
+          <Pressable 
+            style={[styles.buttonSubmit, !isEdited && styles.buttonDisabled]} 
+            onPress={handleSubmit(onSubmit)}
+            disabled={!isEdited}
+          >
+            <Text style={styles.buttonText}>Submit Stock Take</Text>
+          </Pressable>
+          
+          <Pressable style={styles.buttonCancel} onPress={handleCancel}>
+            <Text style={styles.buttonText}>Cancel</Text>
+          </Pressable>
+        </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -330,14 +324,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
   },
-  paginationStats: {
-    marginBottom: 15,
+  resetSearchButton: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 6,
   },
-  statsText: {
+  resetSearchText: {
+    color: '#007bff',
     fontSize: 14,
-    color: '#666',
   },
-  productsContainer: {
+  categoryBlock: {
+    marginBottom: 25,
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 15,
@@ -346,28 +344,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    marginBottom: 20,
+  },
+  categoryHeader: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 15,
+    color: '#333',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 5,
   },
   productRow: {
+    marginBottom: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  productInfo: {
-    flex: 1,
-    paddingRight: 10,
   },
   productName: {
     fontSize: 16,
-    fontWeight: '500',
-  },
-  categoryName: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
+    flex: 1,
+    paddingRight: 10,
   },
   inputContainer: {
     width: 120,
@@ -408,62 +404,34 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  resetSearchButton: {
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 6,
-  },
-  resetSearchText: {
-    color: '#007bff',
-    fontSize: 14,
-  },
-  paginationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+  buttonContainer: {
     marginTop: 20,
   },
-  pageButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    backgroundColor: '#e9ecef',
-    borderRadius: 6,
-    marginHorizontal: 5,
-    marginVertical: 5,
-  },
-  pageButtonText: {
-    color: '#333',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  pageNumButton: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e9ecef',
-    borderRadius: 6,
-    marginHorizontal: 3,
-    marginVertical: 5,
-  },
-  activePageButton: {
+  buttonSubmit: {
     backgroundColor: '#007bff',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 15,
   },
-  pageNumText: {
-    color: '#333',
-    fontSize: 14,
-    fontWeight: '500',
+  buttonDisabled: {
+    backgroundColor: '#b3d7ff',
   },
-  activePageText: {
+  buttonCancel: {
+    backgroundColor: '#fa4352',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
     color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
-  disabledButton: {
-    backgroundColor: '#f0f0f0',
-    opacity: 0.5,
-  },
-  ellipsis: {
-    backgroundColor: 'transparent',
+  underline: {
+    height: 1,
+    backgroundColor: '#ddd',
+    width: '100%',
+    marginTop: 8,
   },
 });
