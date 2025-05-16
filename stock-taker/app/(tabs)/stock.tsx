@@ -22,7 +22,11 @@ export default function StockScreen() {
   // const [isReady, setIsReady] = useState(false);
 
   const fetchStock = useCallback(async (category: string) => {
-    if (!user) return;
+
+    if (!user) {
+      console.log("no user")
+      return
+    };
 
     setFetching(true);
 
@@ -46,7 +50,7 @@ export default function StockScreen() {
         setProducts(groupedProducts);
       }
     } catch (error) {
-      console.error('Error fetching stock:', error);
+      Alert.alert('Error', 'fetching stock:' + error);
     }
 
     setFetching(false);

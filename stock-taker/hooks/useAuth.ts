@@ -9,6 +9,7 @@ export function useAuth() {
     name: string;
     email: string;
     department: string;
+    approved: boolean
   }
   
   const [userAuth, setUserAuth] = useState<User | null>(null);
@@ -50,7 +51,7 @@ export function useAuth() {
   const fetchUser = useCallback(async (user_id: string) => {
     const { data, error } = await supabase
       .from('users') // Query 'users' table
-      .select('id, name, email, department') // Correct fields to select
+      .select('id, name, email, department, approved') // Correct fields to select
       .eq('id', user_id) // Fetch the user by ID
       .single(); // Ensure only one user is fetched
   

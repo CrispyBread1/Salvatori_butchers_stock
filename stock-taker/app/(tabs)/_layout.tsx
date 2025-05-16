@@ -10,8 +10,10 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function TabLayout() {
-  const { user } = useAuth();
+  const { user }  = useAuth();
   const colorScheme = useColorScheme();
+
+
 
   return (
     <Tabs
@@ -28,6 +30,7 @@ export default function TabLayout() {
           default: {},
         }),
       }}>
+
       <Tabs.Screen
         name="index"
         options={{
@@ -35,37 +38,26 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      {!user && <Tabs.Screen
+      
+      {/* Stock Screen - always included but with conditional href */}
+      <Tabs.Screen
         name="stock"
         options={{
           title: 'Stock Take',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="playlist-add" color={color} />,
-          
-          href: null,
-        }}
-      />}
-      {!user && <Tabs.Screen
+          href: (user && user.approved) ? undefined : null, // Only navigable if user is approved
+        }} 
+      />
+
+      {/* Deliveries Screen - always included but with conditional href */}
+      <Tabs.Screen
         name="deliveries"
         options={{
           title: 'Deliveries',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="add-box" color={color} />,
-          
-          href: null,
-        }}
-      />}
-      {user && <Tabs.Screen
-            name="deliveries"
-            options={{
-              title: 'Deliveries',
-              tabBarIcon: ({ color }) => <IconSymbol size={28} name="add-box" color={color} />,
-      }} />}
-
-      {user && <Tabs.Screen
-            name="stock"
-            options={{
-              title: 'Stock Take',
-              tabBarIcon: ({ color }) => <IconSymbol size={28} name="playlist-add" color={color} />,
-            }} />}      
+          href: (user && user.approved) ? undefined : null, // Only navigable if user is approved
+        }} 
+      />
     </Tabs>
   );
 }
