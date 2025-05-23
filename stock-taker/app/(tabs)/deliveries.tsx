@@ -1,9 +1,16 @@
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import BarcodeScanner from '@/components/BarcodeScanner';
+import ProductPicker from '@/components/ProductPicker';
+
+interface Product {
+  id: number;
+  name: string;
+  product_category: string;
+}
 
 export default function DeliveriesScreen() {
   const { user } = useAuth();
@@ -11,10 +18,46 @@ export default function DeliveriesScreen() {
   const [barcodeScan, setBarcodeScan] = useState(false);
   const [enterManually, setEnterManually] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [fetching, setFetching] = useState(true);
+  const [showPicker, setShowPicker] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
 
   useEffect(() => {
     handleUIReset()
-  }, []);
+    fetchStock('fresh')
+  }, [user]);
+
+  const fetchStock = useCallback(async (category: string) => {
+
+    if (!user) {
+      console.log("no user")
+      return
+    };
+
+    setFetching(true);
+
+    try {
+      // Fetch the user's department (pseudo-code)
+      // const { data: profile } = await supabase.from('profiles').select('department').eq('id', user.id).single();
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('stock_category', category) 
+        .order('product_category', { ascending: true });
+
+      if (!error && data) {
+        setProducts(data);
+
+      }
+    } catch (error) {
+      Alert.alert('Error', 'fetching stock:' + error);
+    }
+
+    setFetching(false);
+  }, [user]);
 
   const handleScanBarcode = () => {
     return
@@ -23,8 +66,8 @@ export default function DeliveriesScreen() {
   }
 
   const handleEnterManually = () => {
-    setEnterManually(true)
-    return
+    setEnterManually(true);
+    setShowPicker(true);
   }
 
   const handleUIReset = () => {
@@ -47,9 +90,28 @@ export default function DeliveriesScreen() {
       )}
       {(barcodeScan || enterManually) && (
         <View style={styles.buttonWrapper}>
-        <Button title="Back" onPress={handleUIReset} />
-      </View>
+          <ProductPicker
+            visible={showPicker}
+            products={products}
+            onSelect={(selected_product) => {
+              setSelectedProduct(selected_product);
+              setShowPicker(false);
+            }}
+            onCancel={() => setShowPicker(false)}
+          />
+
+          <Button title="Back" onPress={handleUIReset} />
+        </View>
       )}
+
+      {selectedProduct && (
+        <View style={{ padding: 20 }}>
+          <Text style={{ fontSize: 18 }}>
+            Selected Product: {selectedProduct.name}
+          </Text>
+        </View>
+      )}
+
 
       {(barcodeScan || scannedData) && (
         <View style={styles.scannerWrapper}>
