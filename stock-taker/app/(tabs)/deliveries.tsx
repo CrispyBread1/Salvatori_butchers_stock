@@ -2,7 +2,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import BarcodeScanner from '@/components/BarcodeScanner';
 
 export default function DeliveriesScreen() {
@@ -12,9 +12,14 @@ export default function DeliveriesScreen() {
   const [enterManually, setEnterManually] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
 
+  useEffect(() => {
+    handleUIReset()
+  }, []);
+
   const handleScanBarcode = () => {
-    setBarcodeScan(true)
     return
+    setBarcodeScan(true)
+    
   }
 
   const handleEnterManually = () => {

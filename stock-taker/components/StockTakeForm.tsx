@@ -39,33 +39,32 @@ export default function StockTakeForm({
   const [pendingFormData, setPendingFormData] = useState<Record<string, string> | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState<{ [category: string]: Product[] }>(products);
+  const [allFilteredProducts, setAllFilteredProducts] = useState<Product[]>([]);
+  const [page, setPage] = useState(0);
+
+  const ITEMS_PER_PAGE = 10;
+
   
   // Use the form's built-in isDirty state instead of manual tracking
   const isEdited = isDirty;
 
   // Update filtered products when search query changes
   useEffect(() => {
+    const allProducts = Object.values(products).flat();
+  
     if (searchQuery.trim() === '') {
-      setFilteredProducts(products);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const filtered: { [category: string]: Product[] } = {};
-
-    Object.entries(products).forEach(([category, items]) => {
-      const matchingProducts = items.filter(product => 
+      setAllFilteredProducts(allProducts);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = allProducts.filter(product =>
         product.name.toLowerCase().includes(query)
       );
-      
-      if (matchingProducts.length > 0) {
-        filtered[category] = matchingProducts;
-      }
-    });
-
-    setFilteredProducts(filtered);
+      setAllFilteredProducts(filtered);
+    }
+  
+    setPage(0); // Reset to first page on search change
   }, [searchQuery, products]);
+  
 
   // Function to handle back/cancel button
   const handleCancel = () => {
@@ -151,6 +150,16 @@ export default function StockTakeForm({
     setSearchQuery('');
   };
 
+  const handleNextPage = () => {
+    setPage((prev) => Math.min(prev + 1, Math.floor((allFilteredProducts.length - 1) / ITEMS_PER_PAGE)));
+  };
+  
+  const handlePrevPage = () => {
+    setPage((prev) => Math.max(prev - 1, 0));
+  };
+  
+  
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -161,8 +170,8 @@ export default function StockTakeForm({
   }
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -175,11 +184,11 @@ export default function StockTakeForm({
             maximumDate={new Date()}
           />
         )}
-
+  
         <Text style={styles.headerText}>
           Stock Take for {selectedDate.toLocaleDateString()}
         </Text>
-        
+  
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <TextInput
@@ -195,76 +204,94 @@ export default function StockTakeForm({
             </Pressable>
           )}
         </View>
-
-        {Object.entries(filteredProducts).length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>
-              {searchQuery ? 'No products found matching your search' : 'No products found'}
-            </Text>
-            {searchQuery && (
-              <Pressable style={styles.resetSearchButton} onPress={clearSearch}>
-                <Text style={styles.resetSearchText}>Clear Search</Text>
-              </Pressable>
-            )}
-          </View>
-        ) : (
-          Object.entries(filteredProducts).map(([category, items]) => (
-            <View key={category} style={styles.categoryBlock}>
-              <Text style={styles.categoryHeader}>{titleCaseWord(category)}</Text>
-              {items.map((product) => (
-                <View key={product.id} style={styles.productRow}>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <Controller
-                    control={control}
-                    defaultValue=""
-                    name={String(product.id)}
-                    rules={{ 
-                      pattern: {
-                        value: /^[0-9]*\.?[0-9]*$/,
-                        message: "Please enter a valid number"
-                      }
-                    }}
-                    render={({ field: { onChange, value }, fieldState: { error } }) => (
-                      <View style={styles.inputContainer}>
-                        <TextInput
-                          style={[
-                            styles.input,
-                            error && styles.inputError
-                          ]}
-                          keyboardType="decimal-pad"
-                          value={value}
-                          onChangeText={onChange}
-                          placeholder="0.00"
-                          placeholderTextColor="#aaa"
-                        />
-                        {error && (
-                          <Text style={styles.errorText}>Invalid number</Text>
-                        )}
-                      </View>
-                    )}
-                  />
-                </View>
-              ))}
+  
+          {allFilteredProducts.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                {searchQuery ? 'No products found matching your search' : 'No products found'}
+              </Text>
+              {searchQuery && (
+                <Pressable style={styles.resetSearchButton} onPress={clearSearch}>
+                  <Text style={styles.resetSearchText}>Clear Search</Text>
+                </Pressable>
+              )}
             </View>
-          ))
-        )}
-
-        <View style={styles.buttonContainer}>
-          <Pressable 
-            style={[styles.buttonSubmit, !isEdited && styles.buttonDisabled]} 
-            onPress={handleSubmit(onSubmit)}
-            disabled={!isEdited}
-          >
-            <Text style={styles.buttonText}>Submit Stock Take</Text>
-          </Pressable>
+          ) : (
+            <View style={styles.categoryBlock}>
+              {allFilteredProducts
+                .slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
+                .map((product) => (
+                  <View key={product.id} style={styles.productRow}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    <Controller
+                      control={control}
+                      defaultValue=""
+                      name={String(product.id)}
+                      rules={{
+                        pattern: {
+                          value: /^[0-9]*\.?[0-9]*$/,
+                          message: 'Please enter a valid number',
+                        },
+                      }}
+                      render={({ field: { onChange, value }, fieldState: { error } }) => (
+                        <View style={styles.inputContainer}>
+                          <TextInput
+                            style={[styles.input, error && styles.inputError]}
+                            keyboardType="decimal-pad"
+                            value={value}
+                            onChangeText={onChange}
+                            placeholder="0.00"
+                            placeholderTextColor="#aaa"
+                          />
+                          {error && <Text style={styles.errorText}>Invalid number</Text>}
+                        </View>
+                      )}
+                    />
+                  </View>
+                ))}
           
-          <Pressable style={styles.buttonCancel} onPress={handleCancel}>
-            <Text style={styles.buttonText}>Cancel</Text>
-          </Pressable>
-        </View>
+              {/* Pagination Controls */}
+              <View style={styles.paginationContainer}>
+                <Pressable
+                  onPress={handlePrevPage}
+                  disabled={page === 0}
+                  style={[styles.pageButton, page === 0 && styles.pageButtonDisabled]}
+                >
+                  <Text style={styles.pageButtonText}>Previous</Text>
+                </Pressable>
+                <Text style={styles.pageInfo}>
+                  Page {page + 1} of {Math.ceil(allFilteredProducts.length / ITEMS_PER_PAGE)}
+                </Text>
+                <Pressable
+                  onPress={handleNextPage}
+                  disabled={(page + 1) * ITEMS_PER_PAGE >= allFilteredProducts.length}
+                  style={[
+                    styles.pageButton,
+                    (page + 1) * ITEMS_PER_PAGE >= allFilteredProducts.length && styles.pageButtonDisabled,
+                  ]}
+                >
+                  <Text style={styles.pageButtonText}>Next</Text>
+                </Pressable>
+              </View>
+              <View style={styles.buttonContainer}>
+                <Pressable
+                  style={[styles.buttonSubmit, !isEdited && styles.buttonDisabled]}
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={!isEdited}
+                >
+                  <Text style={styles.buttonText}>Submit Stock Take</Text>
+                </Pressable>
+
+                <Pressable style={styles.buttonCancel} onPress={handleCancel}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
+  
 }
 
 const titleCaseWord = (word: string) => {
@@ -273,6 +300,28 @@ const titleCaseWord = (word: string) => {
 }
 
 const styles = StyleSheet.create({
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  pageButton: {
+    padding: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+  },
+  pageButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  pageButtonText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  pageInfo: {
+    fontSize: 14,
+    color: '#333',
+  },  
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',

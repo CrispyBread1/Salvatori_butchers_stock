@@ -83,9 +83,10 @@ export default function StockScreen() {
       const todayISO = new Date().toISOString();
       const submittedDay = timestamp;
   
-      if (submittedDay === todayISO) {
-        await updateProductStocks(formData);
-      }
+      // Removed until further notice - 23/05/2025
+      // if (submittedDay === todayISO) {
+      //   await updateProductStocks(formData);
+      // }
   
       Alert.alert('Success', 'Stock take submitted successfully.');
       resetUI();
