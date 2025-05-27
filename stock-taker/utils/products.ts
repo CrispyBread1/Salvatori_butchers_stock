@@ -16,6 +16,27 @@ export async function getProductsByCategory(category: string) {
     return []
   }
 }
+export async function getProductById(productId: number): Promise<Product | null> {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .limit(1)
+      .single(); // Fetch just one record
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return null;
+    }
+
+    return data as Product;
+  } catch (error) {
+    console.error('Exception in getProductById:', error);
+    return null;
+  }
+}
+
 
 
 

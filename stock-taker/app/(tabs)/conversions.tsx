@@ -4,7 +4,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import BarcodeScanner from '@/components/BarcodeScanner';
 import ProductPicker from '@/components/ProductPicker';
-import { getProductsByCategory } from '@/utils/products';
+import { getProductById, getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
 import { getActiveConversionByUserId, submitStartConversion } from '@/utils/conversions';
 import { getActiveConversionItemsByConversionId, submitInputConversion } from '@/utils/conversion_items';
@@ -27,6 +27,7 @@ export default function Conversions() {
 
   const [activeConversions, setActiveConversions] = useState<Conversion[]>([])
   const [activeConversionItems, setActiveConversionItems] = useState<ConversionItem[]>([])
+  const [activeConversionProducts, setActiveConversionProducts] = useState<Product[]>([])
 
 
   useFocusEffect(
@@ -34,9 +35,9 @@ export default function Conversions() {
 
       fetchActiveConversions();
       fetchActiveConversionItems();
+      fetchConversionProduct();
+
       handleUIReset();
-      console.log(activeConversions)
-      console.log(activeConversionItems)
     }, [])
   );
 
@@ -60,8 +61,7 @@ export default function Conversions() {
       const fetchedActiveConversionItems = [];
       
       for (const conversion of activeConversions) { // Use 'of' instead of 'in'
-        const conversionItems = await getActiveConversionItemsByConversionId(conversion.id.toString());
-        
+        const conversionItems = await getActiveConversionItemsByConversionId(conversion.id);
         if (conversionItems && conversionItems.length > 0) {
           fetchedActiveConversionItems.push(...conversionItems); // Add items to array
         }
@@ -72,6 +72,23 @@ export default function Conversions() {
       setActiveConversionItems([]); // Clear if no active conversions
     }
   };
+
+  const fetchConversionProduct = async () => {
+    if (activeConversions && activeConversions.length > 0) {
+      const fetchedActiveConversionProducts = [];
+      
+      for (const conversionItem of activeConversionItems) { // Use 'of' instead of 'in'
+        const conversionProduct = await getProductById(conversionItem.product_id);
+        if (conversionProduct) {
+          fetchedActiveConversionProducts.push(conversionProduct); // Add items to array
+        }
+      }
+      
+      setActiveConversionProducts(fetchedActiveConversionProducts); // Set the collected items
+    } else {
+      setActiveConversionItems([]); // Clear if no active conversions
+    }
+  }
 
   const fetchStock = useCallback(async (category: string) => {
     if (!user) {
@@ -191,11 +208,6 @@ export default function Conversions() {
               </Text>
               <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
               <Button title="Start" onPress={handleConversionStart} />
-              {/* <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
-              <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
-              <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
-              <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
-              <Button title="Submit" onPress={handleConversionSubmit} /> */}
             </View>
           )}
 
@@ -208,6 +220,7 @@ export default function Conversions() {
         visible={activeConversions.length > 0}
         conversions={activeConversions}
         conversionItems={activeConversionItems}
+        conversionProducts={activeConversionProducts}
         onSelect={(conversion) => {
           console.log('Selected conversion:', conversion);
           // Handle the selected conversion

@@ -1,9 +1,9 @@
 export interface Conversion {
   id: number;
-  createdAt: string;
-  inputProduct: number;
-  outputProducts: number[];
+  created_at: string;
+  input_product: number;
+  output_products: number[];
   status: string;
-  completedAt: string;
-  createdBy: string;
+  completed_at: string;
+  created_by: string;
 }

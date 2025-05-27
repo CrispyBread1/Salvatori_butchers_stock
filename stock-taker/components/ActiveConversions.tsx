@@ -10,11 +10,13 @@ import {
 } from 'react-native';
 import { Conversion } from '@/models/Conversion';
 import { ConversionItem } from '@/models/ConversionItem';
+import { Product } from '@/models/Product';
 
 interface ActiveConversionsProps {
   visible: boolean;
   conversions: Conversion[];
   conversionItems: ConversionItem[];
+  conversionProducts: Product[];
   onSelect: (conversion: Conversion) => void;
   onCancel: () => void;
 }
@@ -23,6 +25,7 @@ const ActiveConversions: React.FC<ActiveConversionsProps> = ({
   visible,
   conversions,
   conversionItems,
+  conversionProducts,
   onSelect,
   onCancel,
 }) => {
@@ -33,8 +36,18 @@ const ActiveConversions: React.FC<ActiveConversionsProps> = ({
 
   // Get the first conversion item for each conversion to display in the table
   const getConversionItem = (conversionId: number) => {
-    return conversionItems.find(item => item.conversionId === conversionId.toString());
+    return conversionItems.find(item => item.conversion_id === conversionId.toString());
+   
+    
   };
+
+  const getConversionProduct = (conversionId: number) => {
+    const activeConversionItem = getConversionItem(conversionId)
+    return conversionProducts.find(
+      item => item.id === activeConversionItem?.product_id
+    );
+  };
+  
 
   const renderConversionRow = ({ item }: { item: Conversion }) => {
     const conversionItem = getConversionItem(item.id);
@@ -45,7 +58,7 @@ const ActiveConversions: React.FC<ActiveConversionsProps> = ({
         onPress={() => onSelect(item)}
       >
         <View style={styles.tableCell}>
-          <Text style={styles.conversionText}>Conversion #{item.id}</Text>
+          <Text style={styles.conversionText}> {getConversionProduct(item.id)?.name}</Text>
           <Text style={styles.statusText}>Status: {item.status}</Text>
         </View>
         <View style={styles.tableCell}>

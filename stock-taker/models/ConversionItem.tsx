@@ -1,8 +1,8 @@
 export interface ConversionItem {
   id: number;
-  createdAt: string;
-  productId: number;
+  created_at: string;
+  product_id: number;
   quantity: number;
   type: string;
-  conversionId: string;
+  conversion_id: string;
 }
