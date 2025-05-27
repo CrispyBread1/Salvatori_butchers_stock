@@ -7,6 +7,7 @@ import BarcodeScanner from '@/components/BarcodeScanner';
 import ProductPicker from '@/components/ProductPicker';
 import { getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
+import { submitDelivery } from '@/utils/delivery';
 
 export default function DeliveriesScreen() {
   const { user } = useAuth();
@@ -21,8 +22,9 @@ export default function DeliveriesScreen() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState('');
   const [driverName, setDriverName] = useState('');
-  const [license_plate, setLicensePlate] = useState('');
+  const [licensePlate, setLicensePlate] = useState('');
   const [temperature, setTemperature] = useState('');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     handleUIReset()
@@ -73,7 +75,44 @@ export default function DeliveriesScreen() {
   };
 
   const handleDeliverySubmit = () => {
+    // console.log('Submitting stock take:', formData, timestamp);
+    if (selectedProduct && user) {
+      try {
+        const quantityNum = parseFloat(quantity);
+        const temperatureNum = parseFloat(temperature);
+        
+        if (isNaN(quantityNum)) {
+          Alert.alert('Error', 'Please enter a valid quantity');
+          return;
+        }
+        
+        if (isNaN(temperatureNum)) {
+          Alert.alert('Error', 'Please enter a valid temperature');
+          return;
+        }
 
+        console.log('Submitting with values:', {
+          productId: selectedProduct.id,
+          userId: user.id,
+          quantity: quantityNum,
+          temperature: temperatureNum,
+          driverName,
+          licensePlate: licensePlate.toUpperCase()
+        });
+
+        submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase());
+    
+        // Removed until further notice - 23/05/2025
+        // if (submittedDay === todayISO) {
+        //   await updateProductStocks(formData);
+        // }
+    
+        Alert.alert('Success', 'Stock take submitted successfully.');
+        handleUIReset();
+      } catch (error) {
+        Alert.alert('Error', 'Failed to submit stock take.');
+      }
+    }
   }
 
   return (
@@ -103,8 +142,9 @@ export default function DeliveriesScreen() {
               </Text>
               <TextInput placeholder="Quantity" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
               <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
-              <TextInput placeholder="License Plate"  value={license_plate} onChangeText={setLicensePlate} style={styles.input} />
+              <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
               <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+              <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
               <Button title="Submit" onPress={handleDeliverySubmit} />
             </View>
           )}

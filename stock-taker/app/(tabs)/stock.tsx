@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import StockTakeForm from '@/components/StockTakeForm';
 import { submitStockTakeEntry } from '@/utils/stockTakes';
-import { updateProductStocks } from '@/utils/updateProducts';
+import { updateProductStocks } from '@/utils/products';
 
 interface Product {
   id: number;
