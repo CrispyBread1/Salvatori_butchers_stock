@@ -58,6 +58,14 @@ export default function TabLayout() {
           href: (user && user.approved) ? undefined : null, // Only navigable if user is approved
         }} 
       />
+      <Tabs.Screen
+        name="conversions"
+        options={{
+          title: 'Conversion',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="add-box" color={color} />,
+          href: (user && user.approved) ? undefined : null, // Only navigable if user is approved
+        }} 
+      />
     </Tabs>
   );
 }

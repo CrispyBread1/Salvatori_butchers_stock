@@ -1,6 +1,5 @@
 import { View, Text, Button, StyleSheet, Alert, TextInput } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/utils/supabaseClient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import BarcodeScanner from '@/components/BarcodeScanner';
@@ -8,8 +7,10 @@ import ProductPicker from '@/components/ProductPicker';
 import { getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
 import { submitDelivery } from '@/utils/delivery';
+import { submitStartConversion } from '@/utils/conversions';
+import { submitInputConversion } from '@/utils/conversion_items';
 
-export default function DeliveriesScreen() {
+export default function Conversions() {
   const { user } = useAuth();
   const router = useRouter();
   const [barcodeScan, setBarcodeScan] = useState(false);
@@ -82,7 +83,7 @@ export default function DeliveriesScreen() {
     setScannedData(data);
   };
 
-  const handleDeliverySubmit = () => {
+  const handleConversionSubmit = () => {
     // Validate required fields
     if (!quantity.trim()) {
       Alert.alert('Error', 'Please enter a quantity');
@@ -138,6 +139,21 @@ export default function DeliveriesScreen() {
     }
   }
 
+  const handleConversionStart = async () => {
+    if (!quantity.trim()) {
+      Alert.alert('Error', 'Please enter a quantity');
+      return;
+    }
+    if (selectedProduct && user) {
+      try {
+        const conversionId = await submitStartConversion(selectedProduct.id, 'in_progress', user.id)
+        submitInputConversion(selectedProduct.id, parseFloat(quantity), 'input', conversionId)
+      } catch (error) {
+        console.error('Error starting conversion:', error);
+      }
+    }
+  }
+
   return (
     <View style={styles.container}>
       {(!barcodeScan && !enterManually) && (
@@ -164,11 +180,12 @@ export default function DeliveriesScreen() {
                 Selected Product: {selectedProduct.name}
               </Text>
               <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
-              <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
+              <Button title="Start" onPress={handleConversionStart} />
+              {/* <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
               <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
               <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
               <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
-              <Button title="Submit" onPress={handleDeliverySubmit} />
+              <Button title="Submit" onPress={handleConversionSubmit} /> */}
             </View>
           )}
 
@@ -234,3 +251,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   }
 });
+
