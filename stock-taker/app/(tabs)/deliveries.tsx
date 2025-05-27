@@ -1,7 +1,7 @@
 import { View, Text, Button, StyleSheet, Alert, TextInput } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabaseClient';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import BarcodeScanner from '@/components/BarcodeScanner';
 import ProductPicker from '@/components/ProductPicker';
@@ -25,6 +25,13 @@ export default function DeliveriesScreen() {
   const [licensePlate, setLicensePlate] = useState('');
   const [temperature, setTemperature] = useState('');
   const [notes, setNotes] = useState('');
+
+  useFocusEffect(
+    useCallback(() => {
+      // This runs every time the screen comes into focus (tab is pressed)
+      handleUIReset();
+    }, [])
+  );
 
   useEffect(() => {
     handleUIReset()

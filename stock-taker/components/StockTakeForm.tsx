@@ -23,14 +23,14 @@ interface Product {
 
 interface Props {
   products: { [category: string]: Product[] };
-  resetUI: () => void;
+  handleUIReset: () => void;
   submitStockTake: (formData: Record<string, string>, timestamp: string) => void;
   isLoading?: boolean;
 }
 
 export default function StockTakeForm({ 
   products, 
-  resetUI, 
+  handleUIReset, 
   submitStockTake,
   isLoading = false 
 }: Props) {
@@ -71,10 +71,10 @@ export default function StockTakeForm({
     if (isEdited) {
       Alert.alert('Unsaved Changes', 'Are you sure you want to cancel? All entries will be lost.', [
         { text: 'Stay', style: 'cancel' },
-        { text: 'Discard Changes', onPress: resetUI },
+        { text: 'Discard Changes', onPress: handleUIReset },
       ]);
     } else {
-      resetUI();
+      handleUIReset();
     }
   };
 

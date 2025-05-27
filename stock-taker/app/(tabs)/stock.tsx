@@ -21,6 +21,18 @@ export default function StockScreen() {
   const [category, setCategory] = useState('');
   // const [isReady, setIsReady] = useState(false);
 
+  const handleUIReset = () => {
+    setCategory('')
+    setProducts({})
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      // This runs every time the screen comes into focus (tab is pressed)
+      handleUIReset();
+    }, [])
+  );
+
   const fetchStock = useCallback(async (category: string) => {
 
     if (!user) {
@@ -70,10 +82,7 @@ export default function StockScreen() {
     fetchStock('dry')
     setCategory('dry')
   }
-  const resetUI = () => {
-    setCategory('')
-    setProducts({})
-  }
+
 
   const submitStockTake = async (formData: Record<string, string>, timestamp: string) => {
     console.log('Submitting stock take:', formData, timestamp);
@@ -89,7 +98,7 @@ export default function StockScreen() {
       // }
   
       Alert.alert('Success', 'Stock take submitted successfully.');
-      resetUI();
+      handleUIReset();
     } catch (error) {
       Alert.alert('Error', 'Failed to submit stock take.');
     }
@@ -110,7 +119,7 @@ export default function StockScreen() {
         </View>
       )}
 
-      {category && <StockTakeForm products={products} resetUI={resetUI} submitStockTake={submitStockTake} />}
+      {category && <StockTakeForm products={products} handleUIReset={handleUIReset} submitStockTake={submitStockTake} />}
     </View>
   );
 }
