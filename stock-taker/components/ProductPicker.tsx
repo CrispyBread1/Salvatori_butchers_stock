@@ -9,12 +9,7 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
-
-interface Product {
-  id: number;
-  name: string;
-  product_category: string;
-}
+import { Product } from '@/models/Product'; 
 
 interface ProductPickerProps {
   visible: boolean;

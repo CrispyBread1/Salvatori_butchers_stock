@@ -5,12 +5,8 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import BarcodeScanner from '@/components/BarcodeScanner';
 import ProductPicker from '@/components/ProductPicker';
-
-interface Product {
-  id: number;
-  name: string;
-  product_category: string;
-}
+import { getProductsByCategory } from '@/utils/products';
+import { Product } from '@/models/Product'; 
 
 export default function DeliveriesScreen() {
   const { user } = useAuth();
@@ -21,13 +17,12 @@ export default function DeliveriesScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [fetching, setFetching] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState('');
   const [driverName, setDriverName] = useState('');
   const [license_plate, setLicensePlate] = useState('');
   const [temperature, setTemperature] = useState('');
-
 
   useEffect(() => {
     handleUIReset()
@@ -35,30 +30,18 @@ export default function DeliveriesScreen() {
   }, [user]);
 
   const fetchStock = useCallback(async (category: string) => {
-
     if (!user) {
       console.log("no user")
       return
     };
 
     setFetching(true);
-
-    try {
-      // Fetch the user's department (pseudo-code)
-      // const { data: profile } = await supabase.from('profiles').select('department').eq('id', user.id).single();
-      
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('stock_category', category) 
-        .order('product_category', { ascending: true });
-
-      if (!error && data) {
-        setProducts(data);
-
-      }
-    } catch (error) {
-      Alert.alert('Error', 'fetching stock:' + error);
+    let fetchedProducts = await getProductsByCategory('fresh')
+    if (fetchedProducts) {
+      setProducts(fetchedProducts)
+    }
+    else {
+      Alert.alert('Error', 'fetching stock');
     }
 
     setFetching(false);
@@ -67,7 +50,6 @@ export default function DeliveriesScreen() {
   const handleScanBarcode = () => {
     return
     setBarcodeScan(true)
-    
   }
 
   const handleEnterManually = () => {
@@ -79,6 +61,10 @@ export default function DeliveriesScreen() {
     setBarcodeScan(false)
     setEnterManually(false)
     setSelectedProduct(null)
+    setQuantity('')
+    setDriverName('')
+    setLicensePlate('')
+    setTemperature('')
   }
 
   const handleBarcodeScanned = (data: string) => {
@@ -115,10 +101,10 @@ export default function DeliveriesScreen() {
               <Text style={{ fontSize: 18 }}>
                 Selected Product: {selectedProduct.name}
               </Text>
-              <TextInput placeholder="Quantity" value={quantity} onChangeText={setQuantity} style={styles.input} />
+              <TextInput placeholder="Quantity" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
               <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
               <TextInput placeholder="License Plate"  value={license_plate} onChangeText={setLicensePlate} style={styles.input} />
-              <TextInput placeholder="Temperature"  value={temperature} onChangeText={setTemperature} style={styles.input} />
+              <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
               <Button title="Submit" onPress={handleDeliverySubmit} />
             </View>
           )}
@@ -127,9 +113,6 @@ export default function DeliveriesScreen() {
          {selectedProduct && <Button title="Cancel" onPress={handleUIReset} />}
         </View>
       )}
-
-      
-
 
       {(barcodeScan || scannedData) && (
         <View style={styles.scannerWrapper}>
@@ -188,4 +171,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   }
 });
-

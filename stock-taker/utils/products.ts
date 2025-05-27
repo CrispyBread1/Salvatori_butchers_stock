@@ -1,4 +1,25 @@
+import { Product } from '@/models/Product';
 import { supabase } from '@/utils/supabaseClient';
+
+export async function getProductsByCategory(category: string) {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('stock_category', category) 
+      .order('product_category', { ascending: true });
+
+    if (!error && data) {
+      return data as Product[];
+    }
+  } catch (error) {
+    return []
+  }
+}
+
+
+
+
 
 export async function updateProductStocks(data: Record<string, string>) {
   const updates = Object.entries(data).map(([product_id, stock_count]) => ({
