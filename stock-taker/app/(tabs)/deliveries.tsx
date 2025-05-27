@@ -1,4 +1,4 @@
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TextInput } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'expo-router';
@@ -22,6 +22,11 @@ export default function DeliveriesScreen() {
   const [fetching, setFetching] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const [quantity, setQuantity] = useState('');
+  const [driverName, setDriverName] = useState('');
+  const [license_plate, setLicensePlate] = useState('');
+  const [temperature, setTemperature] = useState('');
 
 
   useEffect(() => {
@@ -73,12 +78,17 @@ export default function DeliveriesScreen() {
   const handleUIReset = () => {
     setBarcodeScan(false)
     setEnterManually(false)
+    setSelectedProduct(null)
   }
 
   const handleBarcodeScanned = (data: string) => {
     console.log('Barcode scanned:', data);
     setScannedData(data);
   };
+
+  const handleDeliverySubmit = () => {
+
+  }
 
   return (
     <View style={styles.container}>
@@ -100,17 +110,25 @@ export default function DeliveriesScreen() {
             onCancel={() => setShowPicker(false)}
           />
 
-          <Button title="Back" onPress={handleUIReset} />
+          {selectedProduct && (
+            <View style={{ padding: 20 }}>
+              <Text style={{ fontSize: 18 }}>
+                Selected Product: {selectedProduct.name}
+              </Text>
+              <TextInput placeholder="Quantity" value={quantity} onChangeText={setQuantity} style={styles.input} />
+              <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
+              <TextInput placeholder="License Plate"  value={license_plate} onChangeText={setLicensePlate} style={styles.input} />
+              <TextInput placeholder="Temperature"  value={temperature} onChangeText={setTemperature} style={styles.input} />
+              <Button title="Submit" onPress={handleDeliverySubmit} />
+            </View>
+          )}
+
+         {!selectedProduct && <Button title="Back" onPress={handleUIReset} />}
+         {selectedProduct && <Button title="Cancel" onPress={handleUIReset} />}
         </View>
       )}
 
-      {selectedProduct && (
-        <View style={{ padding: 20 }}>
-          <Text style={{ fontSize: 18 }}>
-            Selected Product: {selectedProduct.name}
-          </Text>
-        </View>
-      )}
+      
 
 
       {(barcodeScan || scannedData) && (
@@ -159,5 +177,15 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
   },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+  }
 });
 
