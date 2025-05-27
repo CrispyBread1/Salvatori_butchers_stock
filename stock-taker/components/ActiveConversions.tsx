@@ -112,6 +112,7 @@ export default ActiveConversions;
 
 const styles = StyleSheet.create({
   container: {
+    width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
