@@ -6,9 +6,11 @@ import BarcodeScanner from '@/components/BarcodeScanner';
 import ProductPicker from '@/components/ProductPicker';
 import { getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
-import { submitDelivery } from '@/utils/delivery';
-import { submitStartConversion } from '@/utils/conversions';
-import { submitInputConversion } from '@/utils/conversion_items';
+import { getActiveConversionByUserId, submitStartConversion } from '@/utils/conversions';
+import { getActiveConversionItemsByConversionId, submitInputConversion } from '@/utils/conversion_items';
+import { Conversion } from '@/models/Conversion';
+import ActiveConversions from '@/components/ActiveConversions';
+import { ConversionItem } from '@/models/ConversionItem';
 
 export default function Conversions() {
   const { user } = useAuth();
@@ -22,15 +24,19 @@ export default function Conversions() {
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState('');
-  const [driverName, setDriverName] = useState('');
-  const [licensePlate, setLicensePlate] = useState('');
-  const [temperature, setTemperature] = useState('');
-  const [notes, setNotes] = useState('');
+
+  const [activeConversions, setActiveConversions] = useState<Conversion[]>([])
+  const [activeConversionItems, setActiveConversionItems] = useState<ConversionItem[]>([])
+
 
   useFocusEffect(
     useCallback(() => {
-      // This runs every time the screen comes into focus (tab is pressed)
+
+      fetchActiveConversions();
+      fetchActiveConversionItems();
       handleUIReset();
+      console.log(activeConversions)
+      console.log(activeConversionItems)
     }, [])
   );
 
@@ -38,6 +44,34 @@ export default function Conversions() {
     handleUIReset()
     fetchStock('fresh')
   }, [user]);
+
+  const fetchActiveConversions = async () => {
+    const conversions = await getActiveConversionByUserId(user?.id || ''); // Add await here
+    if (conversions && conversions.length > 0) {
+      setActiveConversions(conversions); // It's already an array
+    } 
+    else {
+      setActiveConversions([]);
+    }
+  };
+
+  const fetchActiveConversionItems = async () => {
+    if (activeConversions && activeConversions.length > 0) {
+      const fetchedActiveConversionItems = [];
+      
+      for (const conversion of activeConversions) { // Use 'of' instead of 'in'
+        const conversionItems = await getActiveConversionItemsByConversionId(conversion.id.toString());
+        
+        if (conversionItems && conversionItems.length > 0) {
+          fetchedActiveConversionItems.push(...conversionItems); // Add items to array
+        }
+      }
+      
+      setActiveConversionItems(fetchedActiveConversionItems); // Set the collected items
+    } else {
+      setActiveConversionItems([]); // Clear if no active conversions
+    }
+  };
 
   const fetchStock = useCallback(async (category: string) => {
     if (!user) {
@@ -72,10 +106,7 @@ export default function Conversions() {
     setEnterManually(false)
     setSelectedProduct(null)
     setQuantity('')
-    setDriverName('')
-    setLicensePlate('')
-    setTemperature('')
-    setNotes('')
+
   }
 
   const handleBarcodeScanned = (data: string) => {
@@ -90,46 +121,23 @@ export default function Conversions() {
       return;
     }
 
-    if (!driverName.trim()) {
-      Alert.alert('Error', 'Please enter the driver name');
-      return;
-    }
-
-    if (!licensePlate.trim()) {
-      Alert.alert('Error', 'Please enter the license plate');
-      return;
-    }
-
-    if (!temperature.trim()) {
-      Alert.alert('Error', 'Please enter the temperature');
-      return;
-    }
-
     if (selectedProduct && user) {
       try {
         const quantityNum = parseFloat(quantity);
-        const temperatureNum = parseFloat(temperature);
         
         if (isNaN(quantityNum)) {
           Alert.alert('Error', 'Please enter a valid quantity');
           return;
         }
         
-        if (isNaN(temperatureNum)) {
-          Alert.alert('Error', 'Please enter a valid temperature');
-          return;
-        }
 
         console.log('Submitting with values:', {
           productId: selectedProduct.id,
           userId: user.id,
-          quantity: quantityNum,
-          temperature: temperatureNum,
-          driverName,
-          licensePlate: licensePlate.toUpperCase()
+          quantity: quantityNum
         });
 
-        submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase());
+        // submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase());
     
         Alert.alert('Success', 'Stock take submitted successfully.');
         handleUIReset();
@@ -148,6 +156,8 @@ export default function Conversions() {
       try {
         const conversionId = await submitStartConversion(selectedProduct.id, 'in_progress', user.id)
         submitInputConversion(selectedProduct.id, parseFloat(quantity), 'input', conversionId)
+        Alert.alert('Success', 'Stock take submitted successfully.');
+        handleUIReset();
       } catch (error) {
         console.error('Error starting conversion:', error);
       }
@@ -193,6 +203,20 @@ export default function Conversions() {
          {selectedProduct && <Button title="Cancel" onPress={handleUIReset} />}
         </View>
       )}
+
+      <ActiveConversions
+        visible={activeConversions.length > 0}
+        conversions={activeConversions}
+        conversionItems={activeConversionItems}
+        onSelect={(conversion) => {
+          console.log('Selected conversion:', conversion);
+          // Handle the selected conversion
+        }}
+        onCancel={() => {
+          // This will close it, you might want to clear the activeConversions
+          setActiveConversions([]);
+        }}
+      />
 
       {(barcodeScan || scannedData) && (
         <View style={styles.scannerWrapper}>

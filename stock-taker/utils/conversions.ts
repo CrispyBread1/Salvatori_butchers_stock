@@ -1,4 +1,22 @@
+import { Conversion } from '@/models/Conversion';
 import { supabase } from '@/utils/supabaseClient';
+
+export async function getActiveConversionByUserId(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('conversions')
+      .select('*')
+      .eq('status', 'in_progress') 
+      .eq('created_by', userId) 
+
+    if (!error && data) {
+      return data as Conversion[];
+    }
+  } catch (error) {
+    return []
+  }
+}
+
 
 export async function submitStartConversion(inputProductId: number, status: string, createdBy: string) {
   const entry = {
