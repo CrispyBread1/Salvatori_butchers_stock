@@ -67,6 +67,7 @@ export default function DeliveriesScreen() {
     setDriverName('')
     setLicensePlate('')
     setTemperature('')
+    setNotes('')
   }
 
   const handleBarcodeScanned = (data: string) => {
@@ -75,6 +76,27 @@ export default function DeliveriesScreen() {
   };
 
   const handleDeliverySubmit = () => {
+    // Validate required fields
+    if (!quantity.trim()) {
+      Alert.alert('Error', 'Please enter a quantity');
+      return;
+    }
+
+    if (!driverName.trim()) {
+      Alert.alert('Error', 'Please enter the driver name');
+      return;
+    }
+
+    if (!licensePlate.trim()) {
+      Alert.alert('Error', 'Please enter the license plate');
+      return;
+    }
+
+    if (!temperature.trim()) {
+      Alert.alert('Error', 'Please enter the temperature');
+      return;
+    }
+
     // console.log('Submitting stock take:', formData, timestamp);
     if (selectedProduct && user) {
       try {
