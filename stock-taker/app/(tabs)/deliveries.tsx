@@ -97,7 +97,6 @@ export default function DeliveriesScreen() {
       return;
     }
 
-    // console.log('Submitting stock take:', formData, timestamp);
     if (selectedProduct && user) {
       try {
         const quantityNum = parseFloat(quantity);
@@ -123,11 +122,6 @@ export default function DeliveriesScreen() {
         });
 
         submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase());
-    
-        // Removed until further notice - 23/05/2025
-        // if (submittedDay === todayISO) {
-        //   await updateProductStocks(formData);
-        // }
     
         Alert.alert('Success', 'Stock take submitted successfully.');
         handleUIReset();
