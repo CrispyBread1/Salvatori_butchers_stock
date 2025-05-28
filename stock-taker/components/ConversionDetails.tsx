@@ -5,10 +5,14 @@ import { Product } from '@/models/Product';
 import { Conversion } from '@/models/Conversion';
 import { useFocusEffect } from 'expo-router';
 
+type StorageType = 'rounds' | 'freezer' | 'fridge';
+
 interface ConversionOutput {
-  id: string;
-  product: Product;
+  productId: number;
   quantity: string;
+  type: string;
+  conversionId: string;
+  storageType: StorageType;
 }
 
 interface ConversionDetailsProps {
@@ -53,15 +57,17 @@ export default function ConversionDetails({
 
   const handleProductSelect = (product: Product) => {
     const newOutput: ConversionOutput = {
-      id: Date.now().toString(), // Simple ID generation
-      product,
-      quantity: ''
+      productId: product.id,
+      quantity: '',
+      type: 'output',
+      conversionId: conversion.id,
+      storageType: 'rounds',
     };
 
     if (editingIndex !== null) {
       // Edit existing output
       const updatedOutputs = [...outputs];
-      updatedOutputs[editingIndex] = { ...updatedOutputs[editingIndex], product };
+      updatedOutputs[editingIndex] = { ...updatedOutputs[editingIndex], productId: product.id };
       setOutputs(updatedOutputs);
     } else {
       // Add new output
@@ -75,6 +81,12 @@ export default function ConversionDetails({
   const handleQuantityChange = (index: number, quantity: string) => {
     const updatedOutputs = [...outputs];
     updatedOutputs[index].quantity = quantity;
+    setOutputs(updatedOutputs);
+  };
+
+  const handleStorageTypeChange = (index: number, storageType: StorageType) => {
+    const updatedOutputs = [...outputs];
+    updatedOutputs[index].storageType = storageType;
     setOutputs(updatedOutputs);
   };
 
@@ -109,6 +121,30 @@ export default function ConversionDetails({
     setShowSubmitConfirm(false);
   };
 
+  const getProductById = (productId: number): Product | undefined => {
+    return products.find(p => p.id === productId);
+  };
+
+  const renderRadioButton = (
+    index: number, 
+    value: StorageType, 
+    label: string, 
+    selectedValue: StorageType
+  ) => (
+    <TouchableOpacity
+      style={styles.radioContainer}
+      onPress={() => handleStorageTypeChange(index, value)}
+    >
+      <View style={[
+        styles.radioButton,
+        selectedValue === value && styles.radioButtonSelected
+      ]}>
+        {selectedValue === value && <View style={styles.radioButtonInner} />}
+      </View>
+      <Text style={styles.radioLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -120,14 +156,18 @@ export default function ConversionDetails({
 
         {/* Output Products List */}
         <View style={styles.outputsList}>
-          {outputs.map((output, index) => (
-            <View key={output.id} style={styles.outputItem}>
+          {outputs.map((output, index) => {
+            const product = getProductById(output.productId);
+            if (!product) return null;
+            
+            return (
+            <View key={`${output.productId}-${index}`} style={styles.outputItem}>
               <View style={styles.outputHeader}>
                 <TouchableOpacity 
                   style={styles.productButton}
                   onPress={() => handleEditOutput(index)}
                 >
-                  <Text style={styles.outputProductName}>{output.product.name}</Text>
+                  <Text style={styles.outputProductName}>{product.name}</Text>
                   <Text style={styles.changeText}>Tap to change</Text>
                 </TouchableOpacity>
                 
@@ -146,8 +186,19 @@ export default function ConversionDetails({
                 keyboardType="decimal-pad"
                 onChangeText={(text) => handleQuantityChange(index, text)}
               />
+
+              {/* Storage Type Radio Buttons */}
+              <View style={styles.storageTypeContainer}>
+                <Text style={styles.storageTypeLabel}>Storage Type:</Text>
+                <View style={styles.radioGroup}>
+                  {renderRadioButton(index, 'rounds', 'Rounds', output.storageType)}
+                  {renderRadioButton(index, 'freezer', 'Freezer', output.storageType)}
+                  {renderRadioButton(index, 'fridge', 'Fridge', output.storageType)}
+                </View>
+              </View>
             </View>
-          ))}
+            );
+          })}
 
           {/* Add Button */}
           <TouchableOpacity style={styles.addButton} onPress={handleAddOutput}>
@@ -290,6 +341,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
     backgroundColor: '#f9f9f9',
+    marginBottom: 15,
+  },
+  storageTypeContainer: {
+    marginTop: 5,
+  },
+  storageTypeLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  radioGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  radioContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  radioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  radioButtonSelected: {
+    backgroundColor: '#007AFF',
+  },
+  radioButtonInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'white',
+  },
+  radioLabel: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
   },
   addButton: {
     backgroundColor: '#007AFF',

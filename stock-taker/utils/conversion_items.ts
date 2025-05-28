@@ -16,12 +16,13 @@ export async function getActiveConversionItemsByConversionId(conversionId: strin
   }
 }
 
-export async function submitInputConversion(productId: number, quantity: number, type: string, conversionId: number) {
+export async function submitInputConversion(productId: number, quantity: number, type: string, conversionId: number, endPoint?: string)  {
   const entry = {
     product_id: productId,
     quantity: quantity,
     type: type,
     conversion_id: conversionId,
+    end_point: endPoint || null
   };
 
   const { error } = await supabase.from('conversion_items').insert(entry);
@@ -31,3 +32,5 @@ export async function submitInputConversion(productId: number, quantity: number,
     throw error;
   }
 }
+
+

@@ -6,7 +6,7 @@ import BarcodeScanner from '@/components/BarcodeScanner';
 import ProductPicker from '@/components/ProductPicker';
 import { getProductById, getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
-import { getActiveConversionByUserId, submitStartConversion } from '@/utils/conversions';
+import { getActiveConversionByUserId, submitStartConversion, updateConversion } from '@/utils/conversions';
 import { getActiveConversionItemsByConversionId, submitInputConversion } from '@/utils/conversion_items';
 import { Conversion } from '@/models/Conversion';
 import ActiveConversions from '@/components/ActiveConversions';
@@ -97,12 +97,10 @@ export default function Conversions() {
         
       for (const conversionItem of conversionItems) { // Use 'of' instead of 'in'
         const conversionProduct = products.find(item => item.id === conversionItem.product_id);  
-        console.log('conversionProduct', conversionProduct)
         if (conversionProduct) {
           activeConversionProducts.push(conversionProduct); // Add items to array
         }
       }
-      console.log('activeConversionProducts', activeConversionProducts)
       setActiveConversionProducts(activeConversionProducts); // Set the collected items
     } else {
       setActiveConversionItems([]); // Clear if no active conversions
@@ -173,10 +171,23 @@ export default function Conversions() {
 
   const handleConversionSubmit = async (outputs: any[]) => {
     try {
-      // Process the conversion outputs
-      console.log('Conversion outputs:', outputs);
-      // Add your submission logic here
-      
+      // console.log('Conversion outputs:', outputs);
+      var conversionId = ''
+      const conversionItemIds = []
+      for (const conversionItem of outputs) {
+        if (!conversionId) {
+          conversionId = conversionItem.conversionId
+        }
+        conversionItemIds.push(conversionItem.id)
+        await submitInputConversion(
+          conversionItem.productId,
+          parseFloat(conversionItem.quantity), 
+          conversionItem.storageType,
+          conversionItem.conversionId,
+          conversionItem.endPoint
+        );
+      }
+      await updateConversion(conversionId, conversionItemIds)
       Alert.alert('Success', 'Conversion submitted successfully!');
       handleUIReset();
     } catch (error) {

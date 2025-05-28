@@ -17,7 +17,6 @@ export async function getActiveConversionByUserId(userId: string) {
   }
 }
 
-
 export async function submitStartConversion(inputProductId: number, status: string, createdBy: string) {
   const entry = {
     input_product: inputProductId,
@@ -37,4 +36,17 @@ export async function submitStartConversion(inputProductId: number, status: stri
   }
 
   return data.id;
+}
+
+export async function updateConversion(conversionId: string, data: number[]) {
+  const timestamp = new Date().toISOString();
+  const { error } = await supabase
+    .from('conversions')
+    .update({ output_products: data, completed_at: timestamp})
+    .eq('id', conversionId);
+
+  if (error) {
+    console.error(`Failed to update conversion ${conversionId}:`, error);
+    throw error;
+  }
 }
