@@ -11,6 +11,7 @@ import { getActiveConversionItemsByConversionId, submitInputConversion } from '@
 import { Conversion } from '@/models/Conversion';
 import ActiveConversions from '@/components/ActiveConversions';
 import { ConversionItem } from '@/models/ConversionItem';
+import ConversionDetails from '@/components/ConversionDetails';
 
 export default function Conversions() {
   const { user } = useAuth();
@@ -31,6 +32,9 @@ export default function Conversions() {
 
   const [conversionSelected, setConversionSelected] = useState(false)
   const [activeConversionSelected, setActiveConversionsSelected] = useState<Conversion | null>(null);
+
+  const [showConversionDetails, setShowConversionDetails] = useState(false);
+  const [selectedInputProduct, setSelectedInputProduct] = useState<Product | null>(null);
 
 
   useEffect(() => {
@@ -147,9 +151,39 @@ export default function Conversions() {
   };
 
   const handleSelectedConversion = (conversion: Conversion) => {
-    setActiveConversionsSelected(conversion)
-    setConversionSelected(true)
+    setActiveConversionsSelected(conversion);
+    
+    // Find the input product for this conversion
+    const inputProduct = activeConversionProducts.find(product => {
+      const conversionItem = activeConversionItems.find(item => 
+        item.conversion_id === conversion.id && item.product_id === product.id
+      );
+      return conversionItem;
+    });
+    
+    setSelectedInputProduct(inputProduct || null);
+    setShowConversionDetails(true);
   }
+
+  const handleConversionSubmit = async (outputs: any[]) => {
+    try {
+      // Process the conversion outputs
+      console.log('Conversion outputs:', outputs);
+      // Add your submission logic here
+      
+      Alert.alert('Success', 'Conversion submitted successfully!');
+      handleUIReset();
+    } catch (error) {
+      console.error('Error submitting conversion:', error);
+      Alert.alert('Error', 'Failed to submit conversion');
+    }
+  };
+  
+  const handleConversionDetailsCancel = () => {
+    setShowConversionDetails(false);
+    setSelectedInputProduct(null);
+    setActiveConversionsSelected(null);
+  };
 
   const handleConversionStart = async () => {
     if (!quantity.trim()) {
@@ -170,7 +204,7 @@ export default function Conversions() {
 
   return (
     <View style={styles.container}>
-      {(!barcodeScan && !enterManually && !conversionSelected) && (
+      {(!barcodeScan && !enterManually && !conversionSelected && !showConversionDetails) && (
         <View style={styles.buttonWrapper}>
           <Button title="Scan Barcode" onPress={handleScanBarcode} />
           <Button title="Enter Manually" onPress={handleEnterManually} />
@@ -203,7 +237,7 @@ export default function Conversions() {
         </View>
       )}
 
-      {activeConversions && (
+      {(!showConversionDetails && activeConversions) && (
         <ActiveConversions
         conversions={activeConversions}
         conversionItems={activeConversionItems}
@@ -218,7 +252,15 @@ export default function Conversions() {
         }}
       />)}
 
-      {activeConversionSelected && <Button title="Back" onPress={handleUIReset} />}
+      {showConversionDetails && activeConversionSelected && selectedInputProduct && (
+        <ConversionDetails
+          conversion={activeConversionSelected}
+          inputProduct={selectedInputProduct}
+          products={products}
+          onSubmit={handleConversionSubmit}
+          onCancel={handleConversionDetailsCancel}
+        />
+      )}
 
       {(barcodeScan || scannedData) && (
         <View style={styles.scannerWrapper}>
