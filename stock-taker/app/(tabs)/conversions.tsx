@@ -16,6 +16,7 @@ import ConversionDetails from '@/components/ConversionDetails';
 export default function Conversions() {
   const { user } = useAuth();
   const router = useRouter();
+  const [newConversion, setNewConversion] = useState(false);
   const [barcodeScan, setBarcodeScan] = useState(false);
   const [enterManually, setEnterManually] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
@@ -136,6 +137,10 @@ export default function Conversions() {
     setShowPicker(true);
   }
 
+  const handleNewConversion = () => {
+    setNewConversion(true)
+  }
+
   const handleUIReset = () => {
     setBarcodeScan(false)
     setEnterManually(false)
@@ -143,6 +148,7 @@ export default function Conversions() {
     setQuantity('')
     setConversionSelected(false)
     setActiveConversionsSelected(null)
+    setNewConversion(false)
   }
 
   const handleBarcodeScanned = (data: string) => {
@@ -204,10 +210,12 @@ export default function Conversions() {
 
   return (
     <View style={styles.container}>
-      {(!barcodeScan && !enterManually && !conversionSelected && !showConversionDetails) && (
+       {(!newConversion && !activeConversionSelected) && <Button title="New Conversion" onPress={handleNewConversion} />}
+      {(newConversion && !barcodeScan && !enterManually && !conversionSelected && !showConversionDetails) && (
         <View style={styles.buttonWrapper}>
           <Button title="Scan Barcode" onPress={handleScanBarcode} />
           <Button title="Enter Manually" onPress={handleEnterManually} />
+          <Button title="Cancel" onPress={handleUIReset} />
         </View>
       )}
       {(barcodeScan || enterManually) && (
@@ -233,11 +241,10 @@ export default function Conversions() {
           )}
 
          {!selectedProduct && <Button title="Back" onPress={handleUIReset} />}
-         {selectedProduct && <Button title="Cancel" onPress={handleUIReset} />}
         </View>
       )}
 
-      {(!showConversionDetails && activeConversions) && (
+      {(!newConversion && !showConversionDetails && activeConversions) && (
         <ActiveConversions
         conversions={activeConversions}
         conversionItems={activeConversionItems}

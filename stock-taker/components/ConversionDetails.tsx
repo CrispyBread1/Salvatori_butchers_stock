@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import ProductPicker from '@/components/ProductPicker';
 import { Product } from '@/models/Product';
 import { Conversion } from '@/models/Conversion';
+import { useFocusEffect } from 'expo-router';
 
 interface ConversionOutput {
   id: string;
@@ -29,6 +30,14 @@ export default function ConversionDetails({
   const [showPicker, setShowPicker] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const wasteProduct = { "cost": 0, "id": 0, "name": 'Waste', "product_category": 'waste', "product_value": 0, "sage_code": 'waste', "sold_as": '', "stock_category": '', "stock_count": 0, "supplier": ''}
+      wasteProduct as Product
+      products.unshift(wasteProduct)
+    }, [products])
+  );
 
   const handleAddOutput = () => {
     setEditingIndex(null);
