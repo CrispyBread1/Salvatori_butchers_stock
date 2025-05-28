@@ -13,7 +13,6 @@ import { ConversionItem } from '@/models/ConversionItem';
 import { Product } from '@/models/Product';
 
 interface ActiveConversionsProps {
-  visible: boolean;
   conversions: Conversion[];
   conversionItems: ConversionItem[];
   conversionProducts: Product[];
@@ -22,26 +21,26 @@ interface ActiveConversionsProps {
 }
 
 const ActiveConversions: React.FC<ActiveConversionsProps> = ({
-  visible,
   conversions,
   conversionItems,
   conversionProducts,
   onSelect,
   onCancel,
 }) => {
-  // Don't render anything if not visible
-  if (!visible) {
-    return null;
-  }
+
+  useEffect(() => {
+    // console.log('conversions', conversions)
+    // console.log('conversionItems', conversionItems)
+    // console.log('conversionProducts', conversionProducts)
+  }, [conversions,conversionItems,conversionProducts  ]);
+
 
   // Get the first conversion item for each conversion to display in the table
-  const getConversionItem = (conversionId: number) => {
-    return conversionItems.find(item => item.conversion_id === conversionId.toString());
-   
-    
+  const getConversionItem = (conversionId: string) => {
+    return conversionItems.find(item => item.conversion_id === conversionId.toString());    
   };
 
-  const getConversionProduct = (conversionId: number) => {
+  const getConversionProduct = (conversionId: string) => {
     const activeConversionItem = getConversionItem(conversionId)
     return conversionProducts.find(
       item => item.id === activeConversionItem?.product_id

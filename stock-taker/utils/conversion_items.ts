@@ -1,7 +1,7 @@
 import { ConversionItem } from '@/models/ConversionItem';
 import { supabase } from '@/utils/supabaseClient';
 
-export async function getActiveConversionItemsByConversionId(conversionId: number) {
+export async function getActiveConversionItemsByConversionId(conversionId: string) {
   try {
     const { data, error } = await supabase
       .from('conversion_items')

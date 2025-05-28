@@ -29,62 +29,76 @@ export default function Conversions() {
   const [activeConversionItems, setActiveConversionItems] = useState<ConversionItem[]>([])
   const [activeConversionProducts, setActiveConversionProducts] = useState<Product[]>([])
 
+  const [conversionSelected, setConversionSelected] = useState(false)
+  const [activeConversionSelected, setActiveConversionsSelected] = useState<Conversion | null>(null);
+
+
+  useEffect(() => {
+    const initializeData = async () => {
+      handleUIReset();
+      await fetchStock('fresh'); // Wait for products to load
+      // await fetchActiveConversions(); 
+    };
+    
+    initializeData();
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
-
-      fetchActiveConversions();
-      fetchActiveConversionItems();
-      fetchConversionProduct();
-
-      handleUIReset();
-    }, [])
+      if (products.length > 0) { // Only if products are loaded
+        fetchActiveConversions();
+      }
+    }, [products])
   );
 
-  useEffect(() => {
-    handleUIReset()
-    fetchStock('fresh')
-  }, [user]);
+ 
 
   const fetchActiveConversions = async () => {
-    const conversions = await getActiveConversionByUserId(user?.id || ''); // Add await here
-    if (conversions && conversions.length > 0) {
-      setActiveConversions(conversions); // It's already an array
-    } 
-    else {
+    try {
+      const conversions = await getActiveConversionByUserId(user?.id || '');
+      if (conversions && conversions.length > 0) {
+        setActiveConversions(conversions);
+        await fetchActiveConversionItems(conversions);
+      } else {
+        setActiveConversions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching active conversions:', error);
       setActiveConversions([]);
     }
   };
 
-  const fetchActiveConversionItems = async () => {
-    if (activeConversions && activeConversions.length > 0) {
+  const fetchActiveConversionItems = async (conversions: Conversion[]) => {
+    if (conversions && conversions.length > 0) {
       const fetchedActiveConversionItems = [];
       
-      for (const conversion of activeConversions) { // Use 'of' instead of 'in'
+      for (const conversion of conversions) { // Use 'of' instead of 'in'
         const conversionItems = await getActiveConversionItemsByConversionId(conversion.id);
         if (conversionItems && conversionItems.length > 0) {
           fetchedActiveConversionItems.push(...conversionItems); // Add items to array
         }
       }
-      
       setActiveConversionItems(fetchedActiveConversionItems); // Set the collected items
+      getConversionProduct(fetchedActiveConversionItems);  
+
     } else {
       setActiveConversionItems([]); // Clear if no active conversions
     }
   };
 
-  const fetchConversionProduct = async () => {
-    if (activeConversions && activeConversions.length > 0) {
-      const fetchedActiveConversionProducts = [];
-      
-      for (const conversionItem of activeConversionItems) { // Use 'of' instead of 'in'
-        const conversionProduct = await getProductById(conversionItem.product_id);
+  const getConversionProduct = async (conversionItems: ConversionItem[]) => {
+    if (conversionItems && conversionItems.length > 0) {
+      const activeConversionProducts = [];
+        
+      for (const conversionItem of conversionItems) { // Use 'of' instead of 'in'
+        const conversionProduct = products.find(item => item.id === conversionItem.product_id);  
+        console.log('conversionProduct', conversionProduct)
         if (conversionProduct) {
-          fetchedActiveConversionProducts.push(conversionProduct); // Add items to array
+          activeConversionProducts.push(conversionProduct); // Add items to array
         }
       }
-      
-      setActiveConversionProducts(fetchedActiveConversionProducts); // Set the collected items
+      console.log('activeConversionProducts', activeConversionProducts)
+      setActiveConversionProducts(activeConversionProducts); // Set the collected items
     } else {
       setActiveConversionItems([]); // Clear if no active conversions
     }
@@ -123,7 +137,8 @@ export default function Conversions() {
     setEnterManually(false)
     setSelectedProduct(null)
     setQuantity('')
-
+    setConversionSelected(false)
+    setActiveConversionsSelected(null)
   }
 
   const handleBarcodeScanned = (data: string) => {
@@ -131,37 +146,9 @@ export default function Conversions() {
     setScannedData(data);
   };
 
-  const handleConversionSubmit = () => {
-    // Validate required fields
-    if (!quantity.trim()) {
-      Alert.alert('Error', 'Please enter a quantity');
-      return;
-    }
-
-    if (selectedProduct && user) {
-      try {
-        const quantityNum = parseFloat(quantity);
-        
-        if (isNaN(quantityNum)) {
-          Alert.alert('Error', 'Please enter a valid quantity');
-          return;
-        }
-        
-
-        console.log('Submitting with values:', {
-          productId: selectedProduct.id,
-          userId: user.id,
-          quantity: quantityNum
-        });
-
-        // submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase());
-    
-        Alert.alert('Success', 'Stock take submitted successfully.');
-        handleUIReset();
-      } catch (error) {
-        Alert.alert('Error', 'Failed to submit stock take.');
-      }
-    }
+  const handleSelectedConversion = (conversion: Conversion) => {
+    setActiveConversionsSelected(conversion)
+    setConversionSelected(true)
   }
 
   const handleConversionStart = async () => {
@@ -183,7 +170,7 @@ export default function Conversions() {
 
   return (
     <View style={styles.container}>
-      {(!barcodeScan && !enterManually) && (
+      {(!barcodeScan && !enterManually && !conversionSelected) && (
         <View style={styles.buttonWrapper}>
           <Button title="Scan Barcode" onPress={handleScanBarcode} />
           <Button title="Enter Manually" onPress={handleEnterManually} />
@@ -201,7 +188,7 @@ export default function Conversions() {
             onCancel={() => setShowPicker(false)}
           />
 
-          {selectedProduct && (
+          {(selectedProduct && !conversionSelected) && (
             <View style={{ padding: 20 }}>
               <Text style={{ fontSize: 18 }}>
                 Selected Product: {selectedProduct.name}
@@ -216,20 +203,22 @@ export default function Conversions() {
         </View>
       )}
 
-      <ActiveConversions
-        visible={activeConversions.length > 0}
+      {activeConversions && (
+        <ActiveConversions
         conversions={activeConversions}
         conversionItems={activeConversionItems}
         conversionProducts={activeConversionProducts}
         onSelect={(conversion) => {
           console.log('Selected conversion:', conversion);
-          // Handle the selected conversion
+          handleSelectedConversion(conversion)
         }}
         onCancel={() => {
           // This will close it, you might want to clear the activeConversions
           setActiveConversions([]);
         }}
-      />
+      />)}
+
+      {activeConversionSelected && <Button title="Back" onPress={handleUIReset} />}
 
       {(barcodeScan || scannedData) && (
         <View style={styles.scannerWrapper}>
