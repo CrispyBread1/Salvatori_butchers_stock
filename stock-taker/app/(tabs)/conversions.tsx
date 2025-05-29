@@ -147,6 +147,8 @@ export default function Conversions() {
     setConversionSelected(false)
     setActiveConversionsSelected(null)
     setNewConversion(false)
+    setShowConversionDetails(false)
+    setSelectedInputProduct(null)
   }
 
   const handleBarcodeScanned = (data: string) => {
@@ -178,18 +180,26 @@ export default function Conversions() {
         if (!conversionId) {
           conversionId = conversionItem.conversionId
         }
-        conversionItemIds.push(conversionItem.id)
+        conversionItemIds.push(conversionItem.productId)
         await submitInputConversion(
           conversionItem.productId,
           parseFloat(conversionItem.quantity), 
-          conversionItem.storageType,
+          conversionItem.type,
           conversionItem.conversionId,
-          conversionItem.endPoint
+          conversionItem.storageType
         );
       }
       await updateConversion(conversionId, conversionItemIds)
       Alert.alert('Success', 'Conversion submitted successfully!');
-      handleUIReset();
+      
+      // Instead of handleUIReset(), do a more targeted reset:
+      setShowConversionDetails(false);
+      setSelectedInputProduct(null);
+      setActiveConversionsSelected(null);
+      
+      // Refresh the active conversions to reflect the updated state
+      await fetchActiveConversions();
+      
     } catch (error) {
       console.error('Error submitting conversion:', error);
       Alert.alert('Error', 'Failed to submit conversion');
@@ -211,7 +221,7 @@ export default function Conversions() {
       try {
         const conversionId = await submitStartConversion(selectedProduct.id, 'in_progress', user.id)
         submitInputConversion(selectedProduct.id, parseFloat(quantity), 'input', conversionId)
-        Alert.alert('Success', 'Stock take submitted successfully.');
+        Alert.alert('Success', 'Conversion started.');
         handleUIReset();
       } catch (error) {
         console.error('Error starting conversion:', error);

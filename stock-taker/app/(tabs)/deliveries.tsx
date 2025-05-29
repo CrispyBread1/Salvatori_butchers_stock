@@ -130,7 +130,7 @@ export default function DeliveriesScreen() {
 
         submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase());
     
-        Alert.alert('Success', 'Stock take submitted successfully.');
+        Alert.alert('Success', 'New delivery submitted successfully.');
         handleUIReset();
       } catch (error) {
         Alert.alert('Error', 'Failed to submit stock take.');

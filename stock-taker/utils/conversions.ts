@@ -42,7 +42,11 @@ export async function updateConversion(conversionId: string, data: number[]) {
   const timestamp = new Date().toISOString();
   const { error } = await supabase
     .from('conversions')
-    .update({ output_products: data, completed_at: timestamp})
+    .update({ 
+      status: 'complete',
+      output_products: data, 
+      completed_at: timestamp
+    })
     .eq('id', conversionId);
 
   if (error) {

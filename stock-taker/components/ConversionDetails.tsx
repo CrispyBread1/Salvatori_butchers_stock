@@ -5,7 +5,7 @@ import { Product } from '@/models/Product';
 import { Conversion } from '@/models/Conversion';
 import { useFocusEffect } from 'expo-router';
 
-type StorageType = 'rounds' | 'freezer' | 'fridge';
+type StorageType = 'rounds' | 'freezer' | 'fridge' | 'waste';
 
 interface ConversionOutput {
   productId: number;
@@ -61,7 +61,7 @@ export default function ConversionDetails({
       quantity: '',
       type: 'output',
       conversionId: conversion.id,
-      storageType: 'rounds',
+      storageType: 'waste',
     };
 
     if (editingIndex !== null) {
@@ -188,14 +188,14 @@ export default function ConversionDetails({
               />
 
               {/* Storage Type Radio Buttons */}
-              <View style={styles.storageTypeContainer}>
+              { (output.productId !== -1) && <View style={styles.storageTypeContainer}>
                 <Text style={styles.storageTypeLabel}>Storage Type:</Text>
                 <View style={styles.radioGroup}>
                   {renderRadioButton(index, 'rounds', 'Rounds', output.storageType)}
                   {renderRadioButton(index, 'freezer', 'Freezer', output.storageType)}
                   {renderRadioButton(index, 'fridge', 'Fridge', output.storageType)}
                 </View>
-              </View>
+              </View>}
             </View>
             );
           })}
@@ -267,6 +267,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    width: '95%',
   },
   scrollView: {
     flex: 1,
