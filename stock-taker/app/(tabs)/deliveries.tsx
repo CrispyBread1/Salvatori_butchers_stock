@@ -23,6 +23,7 @@ export default function DeliveriesScreen() {
   const [quantity, setQuantity] = useState('');
   const [driverName, setDriverName] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
+  const [batchCode, setBatchCode] = useState('');
   const [temperature, setTemperature] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -88,17 +89,18 @@ export default function DeliveriesScreen() {
       Alert.alert('Error', 'Please enter a quantity');
       return;
     }
-
     if (!driverName.trim()) {
       Alert.alert('Error', 'Please enter the driver name');
       return;
     }
-
     if (!licensePlate.trim()) {
       Alert.alert('Error', 'Please enter the license plate');
       return;
     }
-
+    if (!batchCode.trim()) {
+      Alert.alert('Error', 'Please enter the batch code');
+      return;
+    }
     if (!temperature.trim()) {
       Alert.alert('Error', 'Please enter the temperature');
       return;
@@ -128,7 +130,7 @@ export default function DeliveriesScreen() {
           licensePlate: licensePlate.toUpperCase()
         });
 
-        submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase());
+        submitDelivery(selectedProduct.id, user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase(), batchCode);
     
         Alert.alert('Success', 'New delivery submitted successfully.');
         handleUIReset();
@@ -166,6 +168,7 @@ export default function DeliveriesScreen() {
               <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
               <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
               <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
+              <TextInput placeholder="Batch Code"  value={batchCode} onChangeText={setBatchCode} style={styles.input} />
               <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
               <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
               <Button title="Submit" onPress={handleDeliverySubmit} />
