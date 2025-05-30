@@ -37,6 +37,12 @@ export default function Conversions() {
   const [showConversionDetails, setShowConversionDetails] = useState(false);
   const [selectedInputProduct, setSelectedInputProduct] = useState<Product | null>(null);
 
+  useFocusEffect(
+    useCallback(() => {
+      // This runs every time the screen comes into focus (tab is pressed)
+      handleUIReset();
+    }, [])
+  );
 
   useEffect(() => {
     const initializeData = async () => {
@@ -222,6 +228,7 @@ export default function Conversions() {
         const conversionId = await submitStartConversion(selectedProduct.id, 'in_progress', user.id)
         submitInputConversion(selectedProduct.id, parseFloat(quantity), 'input', conversionId)
         Alert.alert('Success', 'Conversion started.');
+        fetchStock('fresh')
         handleUIReset();
       } catch (error) {
         console.error('Error starting conversion:', error);
