@@ -117,12 +117,13 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
 
   const renderDeliveryRow = ({ item }: { item: Delivery }) => {
     const deliveryProduct = getDeliveryProduct(item.product);
+    const deliveryDate = new Date(item.created_at).toLocaleString()
     
     return (
       <View style={styles.tableRow}>
         <View style={styles.tableCell}>
           <Text style={styles.deliveryText}>{deliveryProduct?.name}</Text>
-          <Text style={styles.statusText}>Date: {item.created_at}</Text>
+          <Text style={styles.statusText}>Date: {deliveryDate}</Text>
         </View>
         <View style={styles.tableCell}>
           <Text style={styles.itemText}>

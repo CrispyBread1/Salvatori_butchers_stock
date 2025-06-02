@@ -6,7 +6,7 @@ export async function getAllDeliveries() {
     const { data, error } = await supabase
       .from('deliveries')
       .select('*')
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Supabase error:', error);

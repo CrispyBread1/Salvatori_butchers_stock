@@ -9,7 +9,7 @@ import { getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
 import { getAllDeliveries, submitDelivery } from '@/utils/delivery';
 import { Delivery } from '@/models/Delivery';
-import PreviousDeliveries from '@/components/deliveries/previousDeliveries';
+import PreviousDeliveries from '@/components/deliveries/PreviousDeliveries';
 
 export default function DeliveriesScreen() {
   const { user } = useAuth();
