@@ -42,10 +42,10 @@ export async function getProductById(productId: number): Promise<Product | null>
 
 
 
-export async function updateProductStocks(data: Record<string, string>) {
+export async function updateProductStocks(data: Record<number, string | number>) {
   const updates = Object.entries(data).map(([product_id, stock_count]) => ({
     id: parseInt(product_id),
-    stock_count: stock_count,
+    stock_count: parseFloat(stock_count.toString()),
   }));
 
   // Batch update (you may need to loop individually depending on Supabase limitations)

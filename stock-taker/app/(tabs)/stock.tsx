@@ -84,18 +84,18 @@ export default function StockScreen() {
   }
 
 
-  const submitStockTake = async (formData: Record<string, string>, timestamp: string) => {
+  const submitStockTake = async (formData: Record<number, string | number>, timestamp: string) => {
     console.log('Submitting stock take:', formData, timestamp);
     try {
       await submitStockTakeEntry(formData, category, timestamp, user.id);
   
-      const todayISO = new Date().toISOString();
-      const submittedDay = timestamp;
+      const todayDate = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD
+      const submittedDate = new Date(timestamp).toISOString().split('T')[0]; // Get YYYY-MM-DD
   
       // Removed until further notice - 23/05/2025
-      // if (submittedDay === todayISO) {
-      //   await updateProductStocks(formData);
-      // }
+      if (submittedDate === todayDate) {
+        await updateProductStocks(formData);
+      }
   
       Alert.alert('Success', 'Stock take submitted successfully.');
       handleUIReset();

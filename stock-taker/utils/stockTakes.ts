@@ -1,6 +1,6 @@
 import { supabase } from '@/utils/supabaseClient';
 
-export async function submitStockTakeEntry(data: Record<string, string>, category: string, timestamp: string, userId: string) {
+export async function submitStockTakeEntry(data: Record<number, string | number>, category: string, timestamp: string, userId: string) {
   const entry = {
     take: data,
     date: timestamp,

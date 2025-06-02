@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ interface Product {
 interface Props {
   products: { [category: string]: Product[] };
   handleUIReset: () => void;
-  submitStockTake: (formData: Record<string, string>, timestamp: string) => void;
+  submitStockTake: (formData: Record<number, string | number>, timestamp: string) => void;
   isLoading?: boolean;
 }
 
@@ -36,11 +36,13 @@ export default function StockTakeForm({
 }: Props) {
   const { control, handleSubmit, reset, formState: { isDirty } } = useForm();
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [pendingFormData, setPendingFormData] = useState<Record<string, string> | null>(null);
+  const [pendingFormData, setPendingFormData] = useState({})
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [allFilteredProducts, setAllFilteredProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(0);
+
+  const [countedProducts, setCountedProducts] = useState({})
 
   const ITEMS_PER_PAGE = 10;
 
@@ -78,61 +80,6 @@ export default function StockTakeForm({
     }
   };
 
-  // Check if the stock take was completed today or on another date
-  const checkStockDate = (formData: Record<string, string>) => {
-    const timestamp = new Date().toISOString();
-    Alert.alert('Stock Take Date', 'Was this stock take completed today?', [
-      {
-        text: 'No, Select Date',
-        onPress: () => {
-          setPendingFormData(configureEmptyOptions(formData));
-          setShowDatePicker(true);
-        },
-      },
-      { 
-        text: 'Yes, Today', 
-        onPress: () => {
-          if (Platform.OS === 'android') {
-            ToastAndroid.show('Submitting stock take...', ToastAndroid.SHORT);
-          }
-          submitStockTake(configureEmptyOptions(formData), timestamp);
-        }
-      },
-    ]);
-  };
-
-  // Handle form submission
-  const onSubmit = (data: Record<string, string>) => {
-    if (isEdited) {
-      Alert.alert('Confirm Submission', 'Are you sure you want to submit this stock take?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Submit', onPress: () => checkStockDate(data) },
-      ]);
-    }
-  };
-
-  // Convert empty values to "0.00" and validate numeric inputs
-  const configureEmptyOptions = (formData: Record<string, string>): Record<string, string> => {
-    const updatedData: Record<string, string> = {};
-  
-    Object.entries(formData).forEach(([key, value]) => {
-      // Handle empty values
-      if (!value || value.trim() === '') {
-        updatedData[key] = '0.00';
-      } 
-      // Ensure proper decimal format
-      else {
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-          updatedData[key] = numValue.toFixed(2);
-        } else {
-          updatedData[key] = '0.00';
-        }
-      }
-    });
-  
-    return updatedData;
-  };
   
   // Handle date picker change
   const handleDateChange = (event: any, date?: Date) => {
@@ -141,7 +88,7 @@ export default function StockTakeForm({
     if (date && pendingFormData) {
       setSelectedDate(date);
       submitStockTake(pendingFormData, date.toISOString());
-      setPendingFormData(null);
+      setPendingFormData({});
     }
   };
 
@@ -157,7 +104,47 @@ export default function StockTakeForm({
   const handlePrevPage = () => {
     setPage((prev) => Math.max(prev - 1, 0));
   };
+
+  const handleStockChange = (product: Product, quantity: string) => {
+    setCountedProducts({
+      ...countedProducts,  // Spread the existing state
+      [product.id]: quantity  // Update the specific product
+    });
+  };
+
+  // Handle form submission
+  const onSubmit = () => {
+    if (isEdited) {
+      Alert.alert('Confirm Submission', 'Are you sure you want to submit this stock take?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Submit', onPress: () => checkStockDate() },
+      ]);
+    }
+  };
+
   
+  // Check if the stock take was completed today or on another date
+  const checkStockDate = () => {
+    const timestamp = new Date().toISOString();
+    Alert.alert('Stock Take Date', 'Was this stock take completed today?', [
+      {
+        text: 'No, Select Date',
+        onPress: () => {
+          setPendingFormData(countedProducts);
+          setShowDatePicker(true);
+        },
+      },
+      { 
+        text: 'Yes, Today', 
+        onPress: () => {
+          if (Platform.OS === 'android') {
+            ToastAndroid.show('Submitting stock take...', ToastAndroid.SHORT);
+          }
+          submitStockTake(countedProducts, timestamp);
+        }
+      },
+    ]);
+  };
   
 
   if (isLoading) {
@@ -239,7 +226,10 @@ export default function StockTakeForm({
                             style={[styles.input, error && styles.inputError]}
                             keyboardType="decimal-pad"
                             value={value}
-                            onChangeText={onChange}
+                            onChangeText={(text) => {
+                              onChange(text);
+                              handleStockChange(product, text); // Your function here
+                            }}
                             placeholder="0.00"
                             placeholderTextColor="#aaa"
                           />
