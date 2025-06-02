@@ -7,7 +7,9 @@ import BarcodeScanner from '@/components/reusable/BarcodeScanner';
 import ProductPicker from '@/components/reusable/ProductPicker';
 import { getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
-import { submitDelivery } from '@/utils/delivery';
+import { getAllDeliveries, submitDelivery } from '@/utils/delivery';
+import { Delivery } from '@/models/Delivery';
+import PreviousDeliveries from '@/components/deliveries/previousDeliveries';
 
 export default function DeliveriesScreen() {
   const { user } = useAuth();
@@ -16,6 +18,7 @@ export default function DeliveriesScreen() {
   const [enterManually, setEnterManually] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [fetching, setFetching] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
 
@@ -37,6 +40,7 @@ export default function DeliveriesScreen() {
   useEffect(() => {
     handleUIReset()
     fetchStock('fresh')
+    fetchDeliveries()
   }, [user]);
 
   const fetchStock = useCallback(async (category: string) => {
@@ -56,6 +60,24 @@ export default function DeliveriesScreen() {
 
     setFetching(false);
   }, [user]);
+
+  const fetchDeliveries = async () => {
+    if (!user) {
+      console.log("no user")
+      return
+    };
+
+    setFetching(true);
+    let fetchedDeliveries = await getAllDeliveries()
+    if (fetchedDeliveries) {
+      setDeliveries(fetchedDeliveries)
+    }
+    else {
+      Alert.alert('Error', 'fetching deliveries');
+    }
+
+    setFetching(false);
+  };
 
   const handleScanBarcode = () => {
     return
@@ -148,6 +170,22 @@ export default function DeliveriesScreen() {
           <Button title="Enter Manually" onPress={handleEnterManually} />
         </View>
       )}
+
+      {(!barcodeScan && !enterManually) && (
+        <PreviousDeliveries
+        deliveries={deliveries}
+        products={products}
+        // onSelect={(conversion) => {
+        //   console.log('Selected conversion:', conversion);
+        //   handleSelectedConversion(conversion)
+        // }}
+        // onCancel={() => {
+          // This will close it, you might want to clear the activeConversions
+          // setActiveConversions([]);
+        // }}
+        />
+      )}
+
       {(barcodeScan || enterManually) && (
         <View style={styles.buttonWrapper}>
           <ProductPicker
