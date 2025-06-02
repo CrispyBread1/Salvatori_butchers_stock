@@ -98,6 +98,8 @@ export default function DeliveriesScreen() {
     setLicensePlate('')
     setTemperature('')
     setNotes('')
+    fetchStock('fresh')
+    fetchDeliveries()
   }
 
   const handleBarcodeScanned = (data: string) => {

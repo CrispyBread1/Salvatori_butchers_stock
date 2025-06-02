@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,59 +20,128 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
   deliveries,
   products,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
-    console.log('deliveries', deliveries)
-    // console.log('products', products)
-    // console.log('conversionProducts', conversionProducts)
-  }, [deliveries  ]);
+    console.log('deliveries', deliveries);
+    // Reset to first page when deliveries change
+    setCurrentPage(1);
+  }, [deliveries]);
 
+  // Filter deliveries based on search query
+  const filteredDeliveries = useMemo(() => {
+    if (!searchQuery.trim()) return deliveries;
 
-  // Get the first conversion item for each conversion to display in the table
-  // const getConversionItem = (conversionId: string) => {
-  //   return conversionItems.find(item => item.conversion_id === conversionId.toString());    
-  // };
+    return deliveries.filter((delivery) => {
+      const product = getDeliveryProduct(delivery.product);
+      const searchLower = searchQuery.toLowerCase();
+      
+      return (
+        product?.name.toLowerCase().includes(searchLower) ||
+        delivery.driver_name?.toLowerCase().includes(searchLower) ||
+        delivery.license_plate?.toLowerCase().includes(searchLower) ||
+        delivery.batch_code?.toLowerCase().includes(searchLower) ||
+        delivery.quantity?.toString().includes(searchLower) ||
+        delivery.temperature?.toString().includes(searchLower)
+      );
+    });
+  }, [deliveries, searchQuery, products]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredDeliveries.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDeliveries = filteredDeliveries.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const getDeliveryProduct = (productId: number) => {
-    return products.find(
-      item => item.id === productId
-    );
+    return products.find(item => item.id === productId);
   };
-  
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handlePageJump = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <Pressable
+          key={i}
+          style={[
+            styles.pageButton,
+            currentPage === i && styles.activePageButton
+          ]}
+          onPress={() => handlePageJump(i)}
+        >
+          <Text style={[
+            styles.pageButtonText,
+            currentPage === i && styles.activePageButtonText
+          ]}>
+            {i}
+          </Text>
+        </Pressable>
+      );
+    }
+
+    return buttons;
+  };
 
   const renderDeliveryRow = ({ item }: { item: Delivery }) => {
-    // Has to be item here, errors otherwise
     const deliveryProduct = getDeliveryProduct(item.product);
     
     return (
-      // Might incorporate this later
-      // <Pressable
-      //   style={styles.tableRow}
-      //   onPress={() => onSelect(item)}
-      // >
-        <>
-          <View style={styles.tableCell}>
-            <Text style={styles.deliveryText}> {deliveryProduct?.name}</Text>
-            <Text style={styles.statusText}>Date: {item.created_at}</Text>
-          </View><View style={styles.tableCell}>
-            <Text style={styles.itemText}>
-              {item ? `Qty: ${item.quantity}` : 'No items'}
-            </Text>
-            <Text style={styles.typeText}>
-              {item ? `Temp: ${item.temperature}` : ''}
-            </Text>
-            <Text style={styles.typeText}>
-              {item ? `Driver: ${item.driver_name}` : ''}
-            </Text>
-            <Text style={styles.typeText}>
-              {item ? `License Plate: ${item.license_plate}` : ''}
-            </Text>
-            <Text style={styles.typeText}>
-              {item ? `Batch Code: ${item.batch_code}` : ''}
-            </Text>
-          </View>
-        </>
-      // </Pressable>
+      <View style={styles.tableRow}>
+        <View style={styles.tableCell}>
+          <Text style={styles.deliveryText}>{deliveryProduct?.name}</Text>
+          <Text style={styles.statusText}>Date: {item.created_at}</Text>
+        </View>
+        <View style={styles.tableCell}>
+          <Text style={styles.itemText}>
+            {item ? `Qty: ${item.quantity}` : 'No items'}
+          </Text>
+          <Text style={styles.typeText}>
+            {item ? `Temp: ${item.temperature}` : ''}
+          </Text>
+          <Text style={styles.typeText}>
+            {item ? `Driver: ${item.driver_name}` : ''}
+          </Text>
+          <Text style={styles.typeText}>
+            {item ? `License Plate: ${item.license_plate}` : ''}
+          </Text>
+          <Text style={styles.typeText}>
+            {item ? `Batch Code: ${item.batch_code}` : ''}
+          </Text>
+        </View>
+      </View>
     );
   };
 
@@ -80,33 +149,94 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
     <View style={styles.container}>
       <Text style={styles.title}>Deliveries</Text>
 
-      {deliveries.length === 0 ? (
-        <Text style={styles.noResults}>No deliveries found</Text>
+      {/* Search Input */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search deliveries..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          clearButtonMode="while-editing"
+        />
+      </View>
+
+      {/* Results Info */}
+      <View style={styles.resultsInfo}>
+        <Text style={styles.resultsText}>
+          Showing {currentDeliveries.length} of {filteredDeliveries.length} deliveries
+          {searchQuery ? ` (filtered from ${deliveries.length} total)` : ''}
+        </Text>
+      </View>
+
+      {filteredDeliveries.length === 0 ? (
+        <Text style={styles.noResults}>
+          {searchQuery ? 'No deliveries match your search' : 'No deliveries found'}
+        </Text>
       ) : (
-        <View style={styles.tableContainer}>
-          {/* Table Header */}
-          <View style={styles.tableHeader}>
-            <View style={styles.tableCell}>
-              <Text style={styles.headerText}>Delivery</Text>
+        <>
+          <View style={styles.tableContainer}>
+            {/* Table Header */}
+            <View style={styles.tableHeader}>
+              <View style={styles.tableCell}>
+                <Text style={styles.headerText}>Delivery</Text>
+              </View>
+              <View style={styles.tableCell}>
+                <Text style={styles.headerText}>Details</Text>
+              </View>
             </View>
-            <View style={styles.tableCell}>
-              <Text style={styles.headerText}>Details</Text>
-            </View>
+
+            {/* Table Data */}
+            <FlatList
+              data={currentDeliveries}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderDeliveryRow}
+              style={styles.tableData}
+              scrollEnabled={false} // Disable scroll since we're using pagination
+            />
           </View>
 
-          {/* Table Data */}
-          <FlatList
-            data={deliveries}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderDeliveryRow}
-            style={styles.tableData}
-          />
-        </View>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <View style={styles.paginationContainer}>
+              <Pressable
+                style={[
+                  styles.navButton,
+                  currentPage === 1 && styles.disabledButton
+                ]}
+                onPress={handlePreviousPage}
+                disabled={currentPage === 1}
+              >
+                <Text style={[
+                  styles.navButtonText,
+                  currentPage === 1 && styles.disabledButtonText
+                ]}>
+                  Previous
+                </Text>
+              </Pressable>
+
+              <View style={styles.pageButtonsContainer}>
+                {renderPaginationButtons()}
+              </View>
+
+              <Pressable
+                style={[
+                  styles.navButton,
+                  currentPage === totalPages && styles.disabledButton
+                ]}
+                onPress={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                <Text style={[
+                  styles.navButtonText,
+                  currentPage === totalPages && styles.disabledButtonText
+                ]}>
+                  Next
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </>
       )}
-{/* 
-      <Pressable style={styles.cancelButton} onPress={onCancel}>
-        <Text style={styles.cancelButtonText}>Hide</Text>
-      </Pressable> */}
     </View>
   );
 };
@@ -137,6 +267,26 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
   },
+  searchContainer: {
+    marginBottom: 15,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  resultsInfo: {
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  resultsText: {
+    fontSize: 12,
+    color: '#666',
+  },
   tableContainer: {
     borderWidth: 1,
     borderColor: '#ddd',
@@ -151,7 +301,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   tableData: {
-    maxHeight: 300,
+    maxHeight: 400,
   },
   tableRow: {
     flexDirection: 'row',
@@ -184,18 +334,6 @@ const styles = StyleSheet.create({
     color: '#777',
     marginVertical: 20,
   },
-  cancelButton: {
-    alignSelf: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 6,
-  },
-  cancelButtonText: {
-    color: '#fa4352',
-    fontSize: 16,
-    fontWeight: '500',
-  },
   statusText: {
     fontSize: 12,
     color: '#666',
@@ -205,5 +343,55 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 2,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 15,
+    paddingHorizontal: 10,
+  },
+  pageButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  navButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#007AFF',
+    borderRadius: 6,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  navButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+  },
+  disabledButtonText: {
+    color: '#999',
+  },
+  pageButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginHorizontal: 2,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 4,
+    minWidth: 32,
+    alignItems: 'center',
+  },
+  activePageButton: {
+    backgroundColor: '#007AFF',
+  },
+  pageButtonText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  activePageButtonText: {
+    color: '#fff',
+    fontWeight: '500',
   },
 });
