@@ -17,7 +17,11 @@ export default function HomeScreen() {
         <>
           <View style={styles.top}>
             <Text style={styles.welcome}>Welcome, {user.name}!</Text>
-            <Button title="Go to Stock Taking" onPress={() => router.push('/stock')} />
+            <View style={styles.buttonWrapper}>
+              <Button title="Go to Stock Taking" onPress={() => router.push('/stock')} />
+              <Button title="Go to Deliveries" onPress={() => router.push('/deliveries')} />
+              <Button title="Go to Conversions" onPress={() => router.push('/conversions')} />
+            </View>
           </View>
 
           <View style={styles.spacer} />
@@ -45,6 +49,10 @@ const styles = StyleSheet.create({
   top: {
     alignItems: 'center',
     marginTop: 60,
+  },
+  buttonWrapper: {
+    width: '70%', // All buttons will have the same width
+    gap: 20,
   },
   welcome: {
     fontSize: 18,
