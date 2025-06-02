@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router"; // Expo Router Navigation
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../../utils/supabaseClient";
 import { View, ActivityIndicator } from "react-native";
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {

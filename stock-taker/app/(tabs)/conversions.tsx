@@ -2,16 +2,16 @@ import { View, Text, Button, StyleSheet, Alert, TextInput } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import BarcodeScanner from '@/components/BarcodeScanner';
-import ProductPicker from '@/components/ProductPicker';
+import BarcodeScanner from '@/components/reusable/BarcodeScanner';
+import ProductPicker from '@/components/reusable/ProductPicker';
 import { getProductById, getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
 import { getActiveConversionByUserId, submitStartConversion, updateConversion } from '@/utils/conversions';
 import { getActiveConversionItemsByConversionId, submitInputConversion } from '@/utils/conversion_items';
 import { Conversion } from '@/models/Conversion';
-import ActiveConversions from '@/components/ActiveConversions';
+import ActiveConversions from '@/components/conversions/ActiveConversions';
 import { ConversionItem } from '@/models/ConversionItem';
-import ConversionDetails from '@/components/ConversionDetails';
+import ConversionDetails from '@/components/conversions/ConversionDetails';
 
 export default function Conversions() {
   const { user } = useAuth();

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, TextInput, ScrollView, TouchableOpacity } from 'react-native';
-import ProductPicker from '@/components/ProductPicker';
+import ProductPicker from '@/components/reusable/ProductPicker';
 import { Product } from '@/models/Product';
 import { Conversion } from '@/models/Conversion';
 import { useFocusEffect } from 'expo-router';

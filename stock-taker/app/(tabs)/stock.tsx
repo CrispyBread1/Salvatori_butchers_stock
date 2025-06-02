@@ -4,7 +4,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusEffect } from '@react-navigation/native'; 
 import { router } from 'expo-router';
-import StockTakeForm from '@/components/StockTakeForm';
+import StockTakeForm from '@/components/stockTake/StockTakeForm';
 import { submitStockTakeEntry } from '@/utils/stockTakes';
 import { updateProductStocks } from '@/utils/products';
 
