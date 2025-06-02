@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,48 +21,43 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
   products,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [filtered, setFiltered] = useState<Delivery[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    console.log('deliveries', deliveries);
+    // console.log('deliveries', deliveries);
     // Reset to first page when deliveries change
     setCurrentPage(1);
   }, [deliveries]);
 
-  // Filter deliveries based on search query
-  const filteredDeliveries = useMemo(() => {
-    if (!searchQuery.trim()) return deliveries;
-
-    return deliveries.filter((delivery) => {
-      const product = getDeliveryProduct(delivery.product);
-      const searchLower = searchQuery.toLowerCase();
-      
-      return (
-        product?.name.toLowerCase().includes(searchLower) ||
-        delivery.driver_name?.toLowerCase().includes(searchLower) ||
-        delivery.license_plate?.toLowerCase().includes(searchLower) ||
-        delivery.batch_code?.toLowerCase().includes(searchLower) ||
-        delivery.quantity?.toString().includes(searchLower) ||
-        delivery.temperature?.toString().includes(searchLower)
-      );
-    });
-  }, [deliveries, searchQuery, products]);
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredDeliveries.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentDeliveries = filteredDeliveries.slice(startIndex, endIndex);
-
-  // Reset to first page when search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
   const getDeliveryProduct = (productId: number) => {
     return products.find(item => item.id === productId);
   };
+
+  useEffect(() => {
+    const query = searchQuery.toLowerCase();
+    const matches = deliveries.filter((delivery) => {
+      const product = getDeliveryProduct(delivery.product);
+      
+      return (
+        product?.name.toLowerCase().includes(query) ||
+        delivery.driver_name?.toLowerCase().includes(query) ||
+        delivery.license_plate?.toLowerCase().includes(query) ||
+        delivery.batch_code?.toLowerCase().includes(query) ||
+        delivery.quantity?.toString().includes(query) ||
+        delivery.temperature?.toString().includes(query)
+      );
+    });
+    setFiltered(matches);
+    setCurrentPage(1); // reset to first page on search
+  }, [searchQuery, deliveries, products]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDeliveries = filtered.slice(startIndex, endIndex);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -164,12 +159,12 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
       {/* Results Info */}
       <View style={styles.resultsInfo}>
         <Text style={styles.resultsText}>
-          Showing {currentDeliveries.length} of {filteredDeliveries.length} deliveries
+          Showing {currentDeliveries.length} of {filtered.length} deliveries
           {searchQuery ? ` (filtered from ${deliveries.length} total)` : ''}
         </Text>
       </View>
 
-      {filteredDeliveries.length === 0 ? (
+      {filtered.length === 0 ? (
         <Text style={styles.noResults}>
           {searchQuery ? 'No deliveries match your search' : 'No deliveries found'}
         </Text>
