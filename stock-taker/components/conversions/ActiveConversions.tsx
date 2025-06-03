@@ -7,6 +7,8 @@ import {
   Pressable,
   StyleSheet,
   Platform,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Conversion } from '@/models/Conversion';
 import { ConversionItem } from '@/models/ConversionItem';
@@ -16,6 +18,7 @@ interface ActiveConversionsProps {
   conversions: Conversion[];
   conversionItems: ConversionItem[];
   conversionProducts: Product[];
+  conversionCancelFunc: (conversion: Conversion) => void;
   onSelect: (conversion: Conversion) => void;
   onCancel: () => void;
 }
@@ -24,15 +27,17 @@ const ActiveConversions: React.FC<ActiveConversionsProps> = ({
   conversions,
   conversionItems,
   conversionProducts,
+  conversionCancelFunc,
   onSelect,
   onCancel,
 }) => {
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
   useEffect(() => {
-    // console.log('conversions', conversions)
-    // console.log('conversionItems', conversionItems)
-    // console.log('conversionProducts', conversionProducts)
-  }, [conversions,conversionItems,conversionProducts  ]);
+    // Force re-render by updating state
+    setRefreshKey(prev => prev + 1);
+  }, [conversions, conversionItems, conversionProducts]);
 
 
   // Get the first conversion item for each conversion to display in the table
@@ -46,6 +51,14 @@ const ActiveConversions: React.FC<ActiveConversionsProps> = ({
       item => item.id === activeConversionItem?.product_id
     );
   };
+
+  const handleCancelConversion = (conversion: Conversion) => {
+    Alert.alert('Remove Conversion', 'Are you sure you want to cancel? The entry will be lost.', [
+      { text: 'Stay', style: 'cancel' },
+      { text: 'Cancel Conversion', onPress: () => conversionCancelFunc(conversion) },
+    ]);
+    
+  }
   
 
   const renderConversionRow = ({ item }: { item: Conversion }) => {
@@ -67,6 +80,12 @@ const ActiveConversions: React.FC<ActiveConversionsProps> = ({
           <Text style={styles.typeText}>
             {conversionItem ? `Type: ${conversionItem.type}` : ''}
           </Text>
+          <TouchableOpacity 
+            style={styles.removeButton}
+            onPress={() => handleCancelConversion(item)}
+          >
+            <Text style={styles.removeButtonText}>×</Text>
+          </TouchableOpacity>
         </View>
       </Pressable>
     );
@@ -160,6 +179,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 10,
     justifyContent: 'center',
+    position: 'relative',
   },
   headerText: {
     fontSize: 16,
@@ -186,6 +206,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#f0f0f0',
     borderRadius: 6,
+  },
+  removeButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#ff4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  
+  removeButtonText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: 'bold',
+    lineHeight: 18.5, // Helps center the × symbol better
   },
   cancelButtonText: {
     color: '#fa4352',

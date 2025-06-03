@@ -6,7 +6,7 @@ import BarcodeScanner from '@/components/reusable/BarcodeScanner';
 import ProductPicker from '@/components/reusable/ProductPicker';
 import { getProductById, getProductsByCategory } from '@/utils/products';
 import { Product } from '@/models/Product'; 
-import { getActiveConversionByUserId, submitStartConversion, updateConversion } from '@/utils/conversions';
+import { cancelActiveConversion, getActiveConversionByUserId, submitStartConversion, updateConversion } from '@/utils/conversions';
 import { getActiveConversionItemsByConversionId, submitInputConversion } from '@/utils/conversion_items';
 import { Conversion } from '@/models/Conversion';
 import ActiveConversions from '@/components/conversions/ActiveConversions';
@@ -145,18 +145,6 @@ export default function Conversions() {
     setNewConversion(true)
   }
 
-  const handleUIReset = () => {
-    setBarcodeScan(false)
-    setEnterManually(false)
-    setSelectedProduct(null)
-    setQuantity('')
-    setConversionSelected(false)
-    setActiveConversionsSelected(null)
-    setNewConversion(false)
-    setShowConversionDetails(false)
-    setSelectedInputProduct(null)
-  }
-
   const handleBarcodeScanned = (data: string) => {
     console.log('Barcode scanned:', data);
     setScannedData(data);
@@ -236,6 +224,28 @@ export default function Conversions() {
     }
   }
 
+  const handleConversionCancel = async (conversion: Conversion) => {
+    try {
+      await cancelActiveConversion(conversion.id)
+      handleUIReset();
+    } catch (error) {
+      console.error('Error starting conversion:', error);
+    }
+  }
+
+  const handleUIReset = () => {
+    fetchActiveConversions()
+    setBarcodeScan(false)
+    setEnterManually(false)
+    setSelectedProduct(null)
+    setQuantity('')
+    setConversionSelected(false)
+    setActiveConversionsSelected(null)
+    setNewConversion(false)
+    setShowConversionDetails(false)
+    setSelectedInputProduct(null)
+  }
+
   return (
     <View style={styles.container}>
        {(!newConversion && !activeConversionSelected) && <Button title="New Conversion" onPress={handleNewConversion} />}
@@ -277,6 +287,7 @@ export default function Conversions() {
         conversions={activeConversions}
         conversionItems={activeConversionItems}
         conversionProducts={activeConversionProducts}
+        conversionCancelFunc={handleConversionCancel}
         onSelect={(conversion) => {
           console.log('Selected conversion:', conversion);
           handleSelectedConversion(conversion)

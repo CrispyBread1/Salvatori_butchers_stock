@@ -54,3 +54,19 @@ export async function updateConversion(conversionId: string, data: number[]) {
     throw error;
   }
 }
+
+export async function cancelActiveConversion(conversionId: string) {
+  const timestamp = new Date().toISOString();
+  const { error } = await supabase
+    .from('conversions')
+    .update({ 
+      status: 'cancelled', 
+      completed_at: timestamp
+    })
+    .eq('id', conversionId);
+
+  if (error) {
+    console.error(`Failed to cancel conversion ${conversionId}:`, error);
+    throw error;
+  }
+}
