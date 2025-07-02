@@ -39,14 +39,16 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
     const query = searchQuery.toLowerCase();
     const matches = deliveries.filter((delivery) => {
       const product = getDeliveryProduct(delivery.product);
-      
+      const created_at =  new Date(delivery.created_at).toLocaleString()
       return (
         product?.name.toLowerCase().includes(query) ||
         delivery.driver_name?.toLowerCase().includes(query) ||
         delivery.license_plate?.toLowerCase().includes(query) ||
         delivery.batch_code?.toLowerCase().includes(query) ||
         delivery.quantity?.toString().includes(query) ||
-        delivery.temperature?.toString().includes(query)
+        delivery.temperature?.toString().includes(query) ||
+        created_at.toLowerCase().includes(query)
+       
       );
     });
     setFiltered(matches);
