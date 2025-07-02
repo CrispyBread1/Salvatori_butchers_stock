@@ -117,8 +117,11 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
     return (
       <View style={styles.tableRow}>
         <View style={styles.tableCell}>
-          <Text style={styles.deliveryText}>{deliveryProduct?.name}</Text>
+          <Text style={styles.boldText}>{item.batch_code}</Text>
           <Text style={styles.statusText}>Date: {deliveryDate}</Text>
+        </View>
+        <View style={styles.tableCell}>
+          <Text style={styles.boldText}>{deliveryProduct?.name}</Text>
         </View>
         <View style={styles.tableCell}>
           <Text style={styles.itemText}>
@@ -133,9 +136,7 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
           <Text style={styles.typeText}>
             {item ? `License Plate: ${item.license_plate}` : ''}
           </Text>
-          <Text style={styles.typeText}>
-            {item ? `Batch Code: ${item.batch_code}` : ''}
-          </Text>
+          
         </View>
       </View>
     );
@@ -145,7 +146,7 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
     <View style={styles.container}>
       <Text style={styles.title}>Deliveries</Text>
 
-      {/* Search Input */}
+      {/* Search Input   ----       ----       ----*/}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -156,7 +157,7 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
         />
       </View>
 
-      {/* Results Info */}
+      {/* Results Info   ----       ----       ----*/}
       <View style={styles.resultsInfo}>
         <Text style={styles.resultsText}>
           Showing {currentDeliveries.length} of {filtered.length} deliveries
@@ -171,27 +172,30 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
       ) : (
         <>
           <View style={styles.tableContainer}>
-            {/* Table Header */}
+            {/* Table Header  ----       ----       ----*/}
             <View style={styles.tableHeader}>
               <View style={styles.tableCell}>
-                <Text style={styles.headerText}>Delivery</Text>
+                <Text style={styles.headerText}>Batch Code</Text>
+              </View>
+              <View style={styles.tableCell}>
+                <Text style={styles.headerText}>Product</Text>
               </View>
               <View style={styles.tableCell}>
                 <Text style={styles.headerText}>Details</Text>
               </View>
             </View>
 
-            {/* Table Data */}
+            {/* Table Data   ----       ----       ----*/}
             <FlatList
               data={currentDeliveries}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderDeliveryRow}
               style={styles.tableData}
-              scrollEnabled={false} // Disable scroll since we're using pagination
+              scrollEnabled={true} 
             />
           </View>
 
-          {/* Pagination Controls */}
+          {/* Pagination Controls   ----       ----       ----*/}
           {totalPages > 1 && (
             <View style={styles.paginationContainer}>
               <Pressable
@@ -316,7 +320,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
-  deliveryText: {
+  boldText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#333',

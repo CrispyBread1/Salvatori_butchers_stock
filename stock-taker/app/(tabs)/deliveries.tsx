@@ -169,7 +169,7 @@ export default function DeliveriesScreen() {
       {(!barcodeScan && !enterManually) && (
         <View style={styles.buttonWrapper}>
           <Button title="Scan Barcode" onPress={handleScanBarcode} />
-          <Button title="Enter Manually" onPress={handleEnterManually} />
+          <Button title="New" onPress={handleEnterManually} />
         </View>
       )}
 

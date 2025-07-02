@@ -18,9 +18,9 @@ export default function HomeScreen() {
           <View style={styles.top}>
             <Text style={styles.welcome}>Welcome, {user.name}!</Text>
             <View style={styles.buttonWrapper}>
-              <Button title="Go to Stock Taking" onPress={() => router.push('/stock')} />
-              <Button title="Go to Deliveries" onPress={() => router.push('/deliveries')} />
-              <Button title="Go to Conversions" onPress={() => router.push('/conversions')} />
+              <Button title="Stock Taking" onPress={() => router.push('/stock')} />
+              <Button title="Deliveries" onPress={() => router.push('/deliveries')} />
+              <Button title="Conversions" onPress={() => router.push('/conversions')} />
             </View>
           </View>
 

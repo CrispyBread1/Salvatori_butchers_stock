@@ -315,6 +315,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+    // Remove any margin/padding that might cause spacing
   },
   loadingContainer: {
     flex: 1,
@@ -328,20 +329,22 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   scrollContainer: {
-    padding: 20,
-    paddingBottom: 40,
+    flexGrow: 1, // Changed from padding: 20
+    padding: 10, // Reduced padding
+    paddingBottom: 20, // Reduced bottom padding
     width: '100%',
-    maxWidth: 600,
-    alignSelf: 'center',
+    // Removed maxWidth constraint
+    // maxWidth: 600,
+    // alignSelf: 'center',
   },
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 15, // Reduced margin
     color: '#333',
   },
   searchContainer: {
-    marginBottom: 20,
+    marginBottom: 15, // Reduced margin
     position: 'relative',
   },
   searchInput: {
@@ -374,7 +377,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   categoryBlock: {
-    marginBottom: 25,
+    flex: 1, // Added to expand
+    marginBottom: 15, // Reduced margin
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 15,
@@ -427,6 +431,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyState: {
+    flex: 1, // Added to expand
     padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
@@ -444,7 +449,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonContainer: {
-    marginTop: 20,
+    marginTop: 15, // Reduced margin
+    paddingBottom: 10, // Added bottom padding for safety
   },
   buttonSubmit: {
     backgroundColor: '#007bff',
