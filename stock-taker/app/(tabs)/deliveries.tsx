@@ -105,7 +105,7 @@ export default function DeliveriesScreen() {
         <NewDelivery
           visible={newDelivery}
           products={products}
-          userId={user.id}
+          user={user}
           onSubmit={handleDeliverySubmit}
           onCancel={handleDeliveryCancel}
         />

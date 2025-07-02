@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, TextInput, Platform, TouchableOpacity } from 'react-native';
 import ProductPicker from '@/components/reusable/ProductPicker';
 import { Product } from '@/models/Product';
 import { submitDelivery } from '@/utils/delivery';
+import { SupabaseUser } from '@/models/User';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface NewDeliveryProps {
   visible: boolean;
   products: Product[];
-  userId: string;
+  user: SupabaseUser;
   onSubmit: () => void;
   onCancel: () => void;
 }
@@ -15,11 +17,11 @@ interface NewDeliveryProps {
 const NewDelivery: React.FC<NewDeliveryProps> = ({
   visible,
   products,
-  userId,
+  user,
   onSubmit,
   onCancel,
 }) => {
-  const [showPicker, setShowPicker] = useState(true);
+  const [showProductPicker, setShowPicker] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState('');
   const [driverName, setDriverName] = useState('');
@@ -27,6 +29,8 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   const [batchCode, setBatchCode] = useState('');
   const [temperature, setTemperature] = useState('');
   const [notes, setNotes] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleDeliverySubmit = () => {
     // Validate required fields
@@ -68,20 +72,31 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
 
         console.log('Submitting with values:', {
           productId: selectedProduct.id,
-          userId: userId,
+          userId: user.id,
           quantity: quantityNum,
           temperature: temperatureNum,
           driverName,
           licensePlate: licensePlate.toUpperCase()
         });
 
-        submitDelivery(selectedProduct.id, userId, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase(), batchCode);
+        submitDelivery(selectedProduct.id, selectedDate.toISOString(), user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase(), batchCode);
     
         Alert.alert('Success', 'New delivery submitted successfully.');
         onSubmit();
       } catch (error) {
         Alert.alert('Error', 'Failed to submit stock take.');
       }
+    }
+  };
+
+  const handleDeliveryDate = () => {
+    setShowDatePicker(true)
+  }
+
+  const handleDateChange = (event: any, date?: Date) => {
+    setShowDatePicker(false)
+    if (date) {
+      setSelectedDate(date)
     }
   };
 
@@ -94,6 +109,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
     setTemperature('');
     setNotes('');
     setShowPicker(true);
+    setShowDatePicker(false)
   };
 
   const handleCancel = () => {
@@ -106,7 +122,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   return (
     <View style={styles.container}>
       <ProductPicker
-        visible={showPicker}
+        visible={showProductPicker}
         products={products}
         onSelect={(selected_product) => {
           setSelectedProduct(selected_product);
@@ -117,21 +133,49 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
 
       {selectedProduct && (
         <View style={{ padding: 20 }}>
-          <Text style={{ fontSize: 18 }}>
-            Selected Product: {selectedProduct.name}
+          <Text style={styles.date}>
+           {selectedDate.toLocaleString('en-GB', {
+              day: '2-digit',
+              month: '2-digit', 
+              year: 'numeric'
+            })}
           </Text>
-          <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
-          <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
-          <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
-          <TextInput placeholder="Batch Code"  value={batchCode} onChangeText={setBatchCode} style={styles.input} />
-          <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
-          <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
-          <Button title="Submit" onPress={handleDeliverySubmit} />
+          <Text style={ styles.productName }>
+            {selectedProduct.name}
+          </Text>
+          <View>
+            <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
+            <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
+            <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
+            <TextInput placeholder="Batch Code"  value={batchCode} onChangeText={setBatchCode} style={styles.input} />
+            <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
+          </View>
+          {user.admin && (
+            <Button title="Select Deliver Date" onPress={handleDeliveryDate} />
+          )}
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+            />
+          )}
+          <View style={styles.confirmButtons}>
+            <TouchableOpacity style={styles.submitButton} onPress={handleDeliverySubmit}>
+              <Text style={styles.buttonText}>Submit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
-      {!selectedProduct && <Button title="Back" onPress={handleCancel} />}
-      {selectedProduct && <Button title="Cancel" onPress={handleCancel} />}
+      {!selectedProduct && <Button title="Back" onPress={handleCancel}/>}
     </View>
   );
 };
@@ -143,6 +187,16 @@ const styles = StyleSheet.create({
     width: '70%',
     gap: 20,
   },
+  date: {
+    fontSize: 30,
+    fontWeight: 600,
+    marginBottom: 10,
+    alignSelf: 'center',
+  },
+  productName: {
+    alignSelf: 'center',
+    marginBottom: 10
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -152,5 +206,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     backgroundColor: '#fff',
-  }
+    marginBottom: 15
+  },
+  submitButton: {
+    flex: 2,
+    alignSelf: 'center',
+    width: '60%',
+    backgroundColor: '#28a745',
+    borderRadius: 7,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 10
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#ff4444',
+    borderRadius: 7,
+    paddingVertical: 10,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fcfcfc',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmButtons: {
+    flexDirection: 'row',
+    gap: 15,
+    width: '100%',
+  },
 });

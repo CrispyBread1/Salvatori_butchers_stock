@@ -1,9 +1,8 @@
-export interface User {
-  id: number;
-  created_at: string;
+export interface SupabaseUser {
+  id: string;
   name: string;
   department: number;
   email: string;
   approved: boolean;
-  passcode: number;
+  admin: boolean;
 }

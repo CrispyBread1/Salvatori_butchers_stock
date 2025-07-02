@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { User } from '@supabase/supabase-js'; 
+import { SupabaseUser } from '@/models/User';
 
 
 export function useAuth() {
@@ -13,7 +14,7 @@ export function useAuth() {
   }
   
   const [userAuth, setUserAuth] = useState<User | null>(null);
-  const [user, setUser] = useState<UserObj | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true); // 🔹 Add loading state
 
   useEffect(()=> {
@@ -51,7 +52,7 @@ export function useAuth() {
   const fetchUser = useCallback(async (user_id: string) => {
     const { data, error } = await supabase
       .from('users') // Query 'users' table
-      .select('id, name, email, department, approved') // Correct fields to select
+      .select('id, name, email, department, approved, admin') // Correct fields to select
       .eq('id', user_id) // Fetch the user by ID
       .single(); // Ensure only one user is fetched
   
@@ -62,7 +63,7 @@ export function useAuth() {
   
     if (data) {
       // Ensure fetched data matches UserObject
-      setUser(data as UserObj); // Set the fetched user data into state
+      setUser(data as SupabaseUser); // Set the fetched user data into state
       setLoading(false);
     }
   }, []);

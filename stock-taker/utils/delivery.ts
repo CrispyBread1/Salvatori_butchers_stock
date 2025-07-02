@@ -23,9 +23,10 @@ export async function getAllDeliveries() {
 }
 
 
-export async function submitDelivery(productId: number, createdBy: string, quantity: number, notes: string, temperature: number, driverName: string, licensePlate: string, batchCode: string) {
+export async function submitDelivery(productId: number, createdAt: string, createdBy: string, quantity: number, notes: string, temperature: number, driverName: string, licensePlate: string, batchCode: string) {
   const entry = {
     product: productId,
+    created_at: createdAt,
     created_by: createdBy,
     quantity: quantity,
     notes: notes,
