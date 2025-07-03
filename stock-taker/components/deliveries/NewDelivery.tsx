@@ -29,6 +29,14 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   const [batchCode, setBatchCode] = useState('');
   const [temperature, setTemperature] = useState('');
   const [notes, setNotes] = useState('');
+
+  const [useByDateDay, setUseByDateDay] = useState('');
+  const [useByDateMonth, setUseByDateMonth] = useState('');
+  const [useByDateYear, setUseByDateYear] = useState('');
+  const [killDateDay, setKillDateDay] = useState('');
+  const [killDateMonth, setKillDateMonth] = useState('');
+  const [killDateYear, setKillDateYear] = useState('');
+
   const [selectedDate, setSelectedDate] = useState(new Date);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -100,6 +108,10 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
     }
   };
 
+  const handleUseByDate = () => {
+
+  }
+
   const handleReset = () => {
     setSelectedProduct(null);
     setQuantity('');
@@ -147,8 +159,35 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
             <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
             <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
             <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
-            <TextInput placeholder="Batch Code"  value={batchCode} onChangeText={setBatchCode} style={styles.input} />
-            <TextInput placeholder="Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Van Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Product Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Slaughter Number"  value={temperature} onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Cut Number"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Origin"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+
+            {/* DO something proper here with the dates, three boxes */}
+            <Text>
+                Use by
+            </Text>
+            <View style={ styles.dateInput }>
+              <TextInput placeholder="Day"  value={useByDateDay} keyboardType="decimal-pad" onChangeText={setUseByDateDay} style={styles.dateInputField} />
+              <TextInput placeholder="Month"  value={useByDateMonth} keyboardType="decimal-pad" onChangeText={setUseByDateMonth} style={styles.dateInputField} />
+              <TextInput placeholder="Year"  value={useByDateYear} keyboardType="decimal-pad" onChangeText={setUseByDateYear} style={styles.dateInputField} />
+            </View>
+            <Text>
+                Kill date
+            </Text>
+            <View style={ styles.dateInput }>
+              <TextInput placeholder="Day"  value={killDateDay} keyboardType="decimal-pad" onChangeText={setKillDateDay} style={styles.dateInputField} />
+              <TextInput placeholder="Month"  value={killDateMonth} keyboardType="decimal-pad" onChangeText={setKillDateMonth} style={styles.dateInputField} />
+              <TextInput placeholder="Year"  value={killDateYear} keyboardType="decimal-pad" onChangeText={setKillDateYear} style={styles.dateInputField} />
+            </View>
+
+            {/* DO something three boxes for as radio buttons */}
+            <TextInput placeholder="Red Tractor"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Rspca"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Organic assured"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+
             <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
           </View>
           {user.admin && (
@@ -235,5 +274,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 15,
     width: '100%',
+  },
+  dateInput: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between', // This spreads them across the width
+    alignItems: 'center',
+    marginBottom: 15
+  },
+  dateInputField: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+    flex: 1, // Each takes equal space
+    marginHorizontal: 5, // Small gap between inputs
   },
 });
