@@ -5,6 +5,7 @@ import { Product } from '@/models/Product';
 import { submitDelivery } from '@/utils/delivery';
 import { SupabaseUser } from '@/models/User';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import RadioButtonGroup from '../reusable/RadioButtons';
 
 interface NewDeliveryProps {
   visible: boolean;
@@ -35,7 +36,9 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   const [useByDateYear, setUseByDateYear] = useState('');
   const [killDateDay, setKillDateDay] = useState('');
   const [killDateMonth, setKillDateMonth] = useState('');
-  const [killDateYear, setKillDateYear] = useState('');
+  const [killDateYear, setKillDateYear] = useState('')
+  
+  const [selectedRTrOA, setSelectedRTrOA] = useState('');
 
   const [selectedDate, setSelectedDate] = useState(new Date);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -165,7 +168,6 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
             <TextInput placeholder="Cut Number"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
             <TextInput placeholder="Origin"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
 
-            {/* DO something proper here with the dates, three boxes */}
             <Text>
                 Use by
             </Text>
@@ -187,6 +189,16 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
             <TextInput placeholder="Red Tractor"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
             <TextInput placeholder="Rspca"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
             <TextInput placeholder="Organic assured"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <RadioButtonGroup
+              label="Select an option if applicable"
+              options={[
+                { value: 'red_tractor', label: 'Red Tractor' },
+                { value: 'rspca', label: 'Rspca' },
+                { value: 'organic_assured', label: 'Organic Assured' }
+              ]}
+              selectedValue={selectedRTrOA}
+              onValueChange={setSelectedRTrOA}
+            />
 
             <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
           </View>
