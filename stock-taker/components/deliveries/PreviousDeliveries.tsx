@@ -44,9 +44,9 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
         product?.name.toLowerCase().includes(query) ||
         delivery.driver_name?.toLowerCase().includes(query) ||
         delivery.license_plate?.toLowerCase().includes(query) ||
-        delivery.batch_code?.toLowerCase().includes(query) ||
+        delivery.batch_code?.toString().includes(query) ||
         delivery.quantity?.toString().includes(query) ||
-        delivery.temperature?.toString().includes(query) ||
+        delivery.product_temp?.toString().includes(query) ||
         created_at.toLowerCase().includes(query)
        
       );
@@ -127,18 +127,11 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
         </View>
         <View style={styles.tableCell}>
           <Text style={styles.itemText}>
-            {item ? `Qty: ${item.quantity}` : 'No items'}
+            {item ? `Qty: ${item.quantity ? item.quantity : 'Empty'}` : 'No items'}
           </Text>
-          <Text style={styles.typeText}>
-            {item ? `Temp: ${item.temperature}` : ''}
+          <Text style={styles.itemText}>
+            {item ? `Supplier: ${item.supplier ? item.supplier : 'Empty'}` : 'No items'}
           </Text>
-          <Text style={styles.typeText}>
-            {item ? `Driver: ${item.driver_name}` : ''}
-          </Text>
-          <Text style={styles.typeText}>
-            {item ? `License Plate: ${item.license_plate}` : ''}
-          </Text>
-          
         </View>
       </View>
     );
