@@ -168,7 +168,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
           return;
         }
       
-        submitDelivery(selectedProduct.id, selectedDate.toISOString(), user.id, parseFloat(quantity), notes, vanTemperature, productTemperature, driverName, licensePlate.toUpperCase(), origin, killDate.toISOString(), useByDate.toISOString(), slaughterNumber, cutNumber, redTractor, rspca, organicAssured, supplier, parseInt(batchCode));
+        submitDelivery(selectedProduct.id, selectedDate.toISOString().split('T')[0], user.id, parseFloat(quantity), notes, vanTemperature, productTemperature, driverName, licensePlate.toUpperCase(), origin, killDate.toISOString(), useByDate.toISOString(), slaughterNumber, cutNumber, redTractor, rspca, organicAssured, supplier, parseInt(batchCode));
     
         Alert.alert('Success', 'New delivery submitted successfully.');
         onSubmit();

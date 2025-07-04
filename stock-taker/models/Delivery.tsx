@@ -21,6 +21,7 @@ export interface Delivery {
   rspca: boolean;
   organic_assured: boolean;
   supplier: string;
+  date: string;
 }
  
 

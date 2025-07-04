@@ -47,7 +47,7 @@ export async function fetchPreviousDeliveryCode(): Promise<number> {
 //  supplier: string;
 export async function submitDelivery(
   productId: number, 
-  createdAt: string, 
+  date: string,
   createdBy: string, 
   quantity: number, 
   notes: string, 
@@ -64,13 +64,14 @@ export async function submitDelivery(
   rspca: boolean,
   organicAssured: boolean,
   supplier: string,
-  batchCode: number
+  batchCode: number,
+  
 ) 
   
   {
   const entry = {
     product: productId,
-    created_at: createdAt,
+    date: date,
     created_by: createdBy,
     quantity: quantity,
     notes: notes,
