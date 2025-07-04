@@ -1,4 +1,4 @@
-import { User } from '@/models/User';
+import { SupabaseUser } from '@/models/User';
 import { supabase } from '@/utils/supabaseClient';
 
 export async function insertUser(id: string, name: string, email: string) {
@@ -19,7 +19,7 @@ export async function insertUser(id: string, name: string, email: string) {
   console.log(`User ${name} added successfully!`);
 }
 
-export async function getUserById(name: string): Promise<User | null> {
+export async function getUserById(name: string): Promise<SupabaseUser | null> {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -33,7 +33,7 @@ export async function getUserById(name: string): Promise<User | null> {
       return null;
     }
 
-    return data as User;
+    return data as SupabaseUser;
   } catch (error) {
     console.error('Exception in getProductById:', error);
     return null;

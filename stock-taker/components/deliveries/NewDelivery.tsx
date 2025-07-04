@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, TextInput, Platform, TouchableOpacity } from 'react-native';
 import ProductPicker from '@/components/reusable/ProductPicker';
 import { Product } from '@/models/Product';
-import { submitDelivery } from '@/utils/delivery';
+import { submitDelivery, fetchPreviousDeliveryCode } from '@/utils/delivery';
 import { SupabaseUser } from '@/models/User';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import RadioButtonGroup from '../reusable/RadioButtons';
@@ -23,7 +23,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const [previousDeliveryCode, setPreviousDeliveryCode] = useState(null)
+  const [previousDeliveryCode, setPreviousDeliveryCode] = useState(0)
   const [showProductPicker, setShowPicker] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState('');
@@ -57,7 +57,57 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
-    setPreviousDeliveryCode(fetchPreviousDeliveryCode())
+    fetchPreviousDeliveryCode()
+      .then((res) => {
+        setPreviousDeliveryCode(res);
+        // Call handleDeliveryBatchCode after state is set
+        handleDeliveryBatchCode(res);
+      })
+      .catch((error) => {
+        console.error('Error fetching previous delivery code:', error);
+      });
+  }, []);
+  
+  // Fixed batch code function - accept the fetched code as parameter
+  const handleDeliveryBatchCode = (prevCode = previousDeliveryCode) => {
+    console.log('handleDeliveryBatchCode is being run');
+    console.log('previous delivery code:', prevCode);
+    console.log('current batch code:', batchCode);
+  
+    // Only set batch code if it's empty
+    if (batchCode === '') {
+      console.log('Batch code is empty, setting new code');
+      
+      let newBatchCode;
+      if (prevCode === 999) {
+        console.log('Previous code was 999, resetting to 001');
+        newBatchCode = '001';
+      } else {
+        console.log('Incrementing previous code');
+        const nextCode = prevCode + 1;
+        // Pad with leading zeros to ensure 3 digits
+        newBatchCode = nextCode.toString().padStart(3, '0');
+      }
+      
+      console.log('Setting batch code to:', newBatchCode);
+      setBatchCode(newBatchCode);
+    } else {
+      console.log('Batch code already set, skipping');
+    }
+  };
+  
+  // Alternative approach using useEffect to watch for previousDeliveryCode changes
+  useEffect(() => {
+    if (previousDeliveryCode !== 0) {
+      handleDeliveryBatchCode();
+    }
+  }, [previousDeliveryCode]);
+  
+  // If you prefer the alternative approach, use this simpler initial useEffect:
+  useEffect(() => {
+    fetchPreviousDeliveryCode()
+      .then((res) => setPreviousDeliveryCode(res))
+      .catch((error) => console.error('Error fetching previous delivery code:', error));
   }, []);
 
   useEffect(() => {
@@ -107,6 +157,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
     }
     handleUseByDate()
     handleKillDate()
+    
 
     if (selectedProduct) {
       try {
@@ -117,7 +168,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
           return;
         }
       
-        submitDelivery(selectedProduct.id, selectedDate.toISOString(), user.id, parseFloat(quantity), notes, vanTemperature, productTemperature, driverName, licensePlate.toUpperCase(), origin, killDate.toISOString(), useByDate.toISOString(), slaughterNumber, cutNumber, redTractor, rspca, organicAssured, supplier, batchCode);
+        submitDelivery(selectedProduct.id, selectedDate.toISOString(), user.id, parseFloat(quantity), notes, vanTemperature, productTemperature, driverName, licensePlate.toUpperCase(), origin, killDate.toISOString(), useByDate.toISOString(), slaughterNumber, cutNumber, redTractor, rspca, organicAssured, supplier, parseInt(batchCode));
     
         Alert.alert('Success', 'New delivery submitted successfully.');
         onSubmit();

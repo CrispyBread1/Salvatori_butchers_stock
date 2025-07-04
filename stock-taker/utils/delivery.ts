@@ -13,12 +13,34 @@ export async function getAllDeliveries() {
       return [];
     }
 
-    console.log(data);
     return data as Delivery[];
     
   } catch (error) {
     console.error('Unexpected error:', error);
     return [];
+  }
+}
+
+
+export async function fetchPreviousDeliveryCode(): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('deliveries')
+      .select('batch_code')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return 0;
+    }
+
+    return data?.batch_code
+    
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return 0;
   }
 }
 
@@ -42,7 +64,7 @@ export async function submitDelivery(
   rspca: boolean,
   organicAssured: boolean,
   supplier: string,
-  batchCode: string
+  batchCode: number
 ) 
   
   {
