@@ -63,11 +63,11 @@ const styles = StyleSheet.create({
   storageTypeContainer: {
     marginTop: 5,
     marginBottom: 15,
+    marginLeft: 10, 
+
   },
   storageTypeLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 16,
     marginBottom: 10,
   },
   radioGroup: {

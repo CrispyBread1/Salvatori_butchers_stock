@@ -6,7 +6,7 @@ export interface Delivery {
   quantity: number;
   notes: string;
   vehicle_temperature: string;
-  temperature: number;
+  product_temperature: string;
   driver_name: string;
   license_plate: string;
   created_by: string;
@@ -22,3 +22,5 @@ export interface Delivery {
   organic_assured: boolean;
   supplier: string;
 }
+ 
+

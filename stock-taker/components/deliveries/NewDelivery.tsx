@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, Alert, TextInput, Platform, TouchableOpacity } from 'react-native';
 import ProductPicker from '@/components/reusable/ProductPicker';
 import { Product } from '@/models/Product';
@@ -6,6 +6,7 @@ import { submitDelivery } from '@/utils/delivery';
 import { SupabaseUser } from '@/models/User';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import RadioButtonGroup from '../reusable/RadioButtons';
+import { Delivery } from '@/models/Delivery';
 
 interface NewDeliveryProps {
   visible: boolean;
@@ -22,31 +23,66 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const [previousDeliveryCode, setPreviousDeliveryCode] = useState(null)
   const [showProductPicker, setShowPicker] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState('');
+  const [supplier, setSupplier] = useState('');
   const [driverName, setDriverName] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
   const [batchCode, setBatchCode] = useState('');
-  const [temperature, setTemperature] = useState('');
+  const [vanTemperature, setVanTemperature] = useState('');
+  const [productTemperature, setProductTemperature] = useState('');
+  const [origin, setOrigin] = useState('');
+  const [cutNumber, setCutNumber] = useState('');
+  const [slaughterNumber, setSlaughterNumber] = useState('');
   const [notes, setNotes] = useState('');
 
-  const [useByDateDay, setUseByDateDay] = useState('');
-  const [useByDateMonth, setUseByDateMonth] = useState('');
-  const [useByDateYear, setUseByDateYear] = useState('');
-  const [killDateDay, setKillDateDay] = useState('');
-  const [killDateMonth, setKillDateMonth] = useState('');
+  const [useByDateDay, setUseByDateDay] = useState('')
+  const [useByDateMonth, setUseByDateMonth] = useState('')
+  const [useByDateYear, setUseByDateYear] = useState('')
+  const [killDateDay, setKillDateDay] = useState('')
+  const [killDateMonth, setKillDateMonth] = useState('')
   const [killDateYear, setKillDateYear] = useState('')
   
   const [selectedRTrOA, setSelectedRTrOA] = useState('');
+  const [previousSelectedRTrOA, setPreviousSelectedRTrOA] = useState('');
+  const [redTractor, setRedTractor] = useState(false);
+  const [rspca, setRspca] = useState(false);
+  const [organicAssured, setOrganicAssured] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(new Date);
+  const [killDate, setKillDate] = useState(new Date);
+  const [useByDate, setUseByDate] = useState(new Date);
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  useEffect(() => {
+    setPreviousDeliveryCode(fetchPreviousDeliveryCode())
+  }, []);
+
+  useEffect(() => {
+    handleRtrOA
+  }, [selectedRTrOA]);
+
+  const handleRtrOA = () => {
+    // Need to fix later where i have the double click on an option means its deselected. This will cause always to have one true if clicked then unlinked
+      if (selectedRTrOA ===  'red_tractor')
+        setRedTractor(true)
+      if (selectedRTrOA ===  'rspca')
+        setRspca(true)
+      if (selectedRTrOA ===  'organic_assured')
+        setOrganicAssured(true)
+  }
 
   const handleDeliverySubmit = () => {
     // Validate required fields
+    
     if (!quantity.trim()) {
       Alert.alert('Error', 'Please enter a quantity');
+      return;
+    }
+    if (!supplier.trim()) {
+      Alert.alert('Error', 'Please enter the supplier');
       return;
     }
     if (!driverName.trim()) {
@@ -57,40 +93,31 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
       Alert.alert('Error', 'Please enter the license plate');
       return;
     }
-    if (!batchCode.trim()) {
-      Alert.alert('Error', 'Please enter the batch code');
+    if (!vanTemperature.trim()) {
+      Alert.alert('Error', 'Please enter the vehicle temperature');
       return;
     }
-    if (!temperature.trim()) {
-      Alert.alert('Error', 'Please enter the temperature');
+    if (!productTemperature.trim()) {
+      Alert.alert('Error', 'Please enter the product temperature');
       return;
     }
+    if (!origin.trim()) {
+      Alert.alert('Error', 'Please enter the products origin');
+      return;
+    }
+    handleUseByDate()
+    handleKillDate()
 
     if (selectedProduct) {
       try {
         const quantityNum = parseFloat(quantity);
-        const temperatureNum = parseFloat(temperature);
         
         if (isNaN(quantityNum)) {
           Alert.alert('Error', 'Please enter a valid quantity');
           return;
         }
-        
-        if (isNaN(temperatureNum)) {
-          Alert.alert('Error', 'Please enter a valid temperature');
-          return;
-        }
-
-        console.log('Submitting with values:', {
-          productId: selectedProduct.id,
-          userId: user.id,
-          quantity: quantityNum,
-          temperature: temperatureNum,
-          driverName,
-          licensePlate: licensePlate.toUpperCase()
-        });
-
-        submitDelivery(selectedProduct.id, selectedDate.toISOString(), user.id, parseFloat(quantity), notes, parseFloat(temperature), driverName, licensePlate.toUpperCase(), batchCode);
+      
+        submitDelivery(selectedProduct.id, selectedDate.toISOString(), user.id, parseFloat(quantity), notes, vanTemperature, productTemperature, driverName, licensePlate.toUpperCase(), origin, killDate.toISOString(), useByDate.toISOString(), slaughterNumber, cutNumber, redTractor, rspca, organicAssured, supplier, batchCode);
     
         Alert.alert('Success', 'New delivery submitted successfully.');
         onSubmit();
@@ -99,6 +126,38 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
       }
     }
   };
+
+  const handleUseByDate = () => {
+    if (!useByDateDay.trim()) {
+      Alert.alert('Error', 'Please fill in the use by date day');
+      return;
+    }
+    if (!useByDateMonth.trim()) {
+      Alert.alert('Error', 'Please fill in the use by date month');
+      return;
+    }
+    if (!useByDateYear.trim()) {
+      Alert.alert('Error', 'Please fill in the use by date year');
+      return;
+    }
+    setUseByDate(new Date(parseInt(useByDateDay), parseInt(useByDateMonth), parseInt(useByDateYear)))
+  }
+
+  const handleKillDate = () => {
+    if (!killDateDay.trim()) {
+      Alert.alert('Error', 'Please fill in the kill date day');
+      return;
+    }
+    if (!killDateMonth.trim()) {
+      Alert.alert('Error', 'Please fill in the kill date month');
+      return;
+    }
+    if (!killDateYear.trim()) {
+      Alert.alert('Error', 'Please fill in the kill date year');
+      return;
+    }
+    setKillDate(new Date(parseInt(killDateDay), parseInt(killDateMonth), parseInt(killDateYear)))
+  }
 
   const handleDeliveryDate = () => {
     setShowDatePicker(true)
@@ -111,18 +170,29 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
     }
   };
 
-  const handleUseByDate = () => {
-
-  }
-
   const handleReset = () => {
     setSelectedProduct(null);
     setQuantity('');
     setDriverName('');
     setLicensePlate('');
     setBatchCode('');
-    setTemperature('');
+    setVanTemperature('');
+    setProductTemperature('')
+    setOrigin('')
+    setCutNumber('')
+    setSupplier('')
+    setSlaughterNumber('')
     setNotes('');
+    setUseByDateDay('');
+    setUseByDateMonth('');
+    setUseByDateYear('');
+    setKillDateDay('');
+    setKillDateMonth('');
+    setKillDateYear('');
+    setSelectedRTrOA('');
+    setOrganicAssured(false)
+    setRedTractor(false)
+    setRspca(false)
     setShowPicker(true);
     setShowDatePicker(false)
   };
@@ -159,16 +229,20 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
             {selectedProduct.name}
           </Text>
           <View>
-            <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
+            <TextInput placeholder="Cases" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
+            <TextInput placeholder="Supplier" value={supplier} onChangeText={setSupplier} style={styles.input} />
             <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
             <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
-            <TextInput placeholder="Van Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
-            <TextInput placeholder="Product Temperature"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
-            <TextInput placeholder="Slaughter Number"  value={temperature} onChangeText={setTemperature} style={styles.input} />
-            <TextInput placeholder="Cut Number"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
-            <TextInput placeholder="Origin"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
+            <TextInput placeholder="Van Temp."  value={vanTemperature} keyboardType="decimal-pad" onChangeText={setVanTemperature} style={styles.input} />
+            <TextInput placeholder="Product Temp."  value={productTemperature} keyboardType="decimal-pad" onChangeText={setProductTemperature} style={styles.input} />
+            <TextInput placeholder="Slaughter No."  value={slaughterNumber} onChangeText={setSlaughterNumber} style={styles.input} />
+            <TextInput placeholder="Cut No."  value={cutNumber} keyboardType="decimal-pad" onChangeText={setCutNumber} style={styles.input} />
+            <TextInput placeholder="Origin"  value={origin} keyboardType="decimal-pad" onChangeText={setOrigin} style={styles.input} />
+            {user.admin && (
+            <TextInput placeholder="Batch Code"  value={batchCode} keyboardType="decimal-pad" onChangeText={setBatchCode} style={styles.input} />
+            )}
 
-            <Text>
+            <Text style={ styles.inputHeader }>
                 Use by
             </Text>
             <View style={ styles.dateInput }>
@@ -176,7 +250,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
               <TextInput placeholder="Month"  value={useByDateMonth} keyboardType="decimal-pad" onChangeText={setUseByDateMonth} style={styles.dateInputField} />
               <TextInput placeholder="Year"  value={useByDateYear} keyboardType="decimal-pad" onChangeText={setUseByDateYear} style={styles.dateInputField} />
             </View>
-            <Text>
+            <Text style={ styles.inputHeader }>
                 Kill date
             </Text>
             <View style={ styles.dateInput }>
@@ -185,10 +259,6 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
               <TextInput placeholder="Year"  value={killDateYear} keyboardType="decimal-pad" onChangeText={setKillDateYear} style={styles.dateInputField} />
             </View>
 
-            {/* DO something three boxes for as radio buttons */}
-            <TextInput placeholder="Red Tractor"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
-            <TextInput placeholder="Rspca"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
-            <TextInput placeholder="Organic assured"  value={temperature} keyboardType="decimal-pad" onChangeText={setTemperature} style={styles.input} />
             <RadioButtonGroup
               label="Select an option if applicable"
               options={[
@@ -306,4 +376,10 @@ const styles = StyleSheet.create({
     flex: 1, // Each takes equal space
     marginHorizontal: 5, // Small gap between inputs
   },
+  inputHeader: {
+    marginBottom: 5,
+    marginLeft: 10, 
+    fontSize: 16,
+
+  }
 });

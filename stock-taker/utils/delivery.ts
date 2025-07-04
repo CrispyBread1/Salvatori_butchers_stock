@@ -22,17 +22,49 @@ export async function getAllDeliveries() {
   }
 }
 
-
-export async function submitDelivery(productId: number, createdAt: string, createdBy: string, quantity: number, notes: string, temperature: number, driverName: string, licensePlate: string, batchCode: string) {
+//  supplier: string;
+export async function submitDelivery(
+  productId: number, 
+  createdAt: string, 
+  createdBy: string, 
+  quantity: number, 
+  notes: string, 
+  vehicleTemperature: string, 
+  productTemperature: string, 
+  driverName: string, 
+  licensePlate: string, 
+  origin: string, 
+  killDate: string, 
+  useBy: string, 
+  slaughterNumber: string, 
+  cutNumber: string, 
+  redTractor: boolean,
+  rspca: boolean,
+  organicAssured: boolean,
+  supplier: string,
+  batchCode: string
+) 
+  
+  {
   const entry = {
     product: productId,
     created_at: createdAt,
     created_by: createdBy,
     quantity: quantity,
     notes: notes,
-    temperature: temperature,
+    vehicle_temperature: vehicleTemperature,
+    product_temperature: productTemperature,
     driver_name: driverName,
     license_plate: licensePlate,
+    origin: origin,
+    kill_date: killDate,
+    use_by: useBy,
+    slaughter_number: slaughterNumber,
+    cut_number: cutNumber,
+    red_tractor: redTractor,
+    rspca: rspca,
+    organic_assured: organicAssured,
+    supplier: supplier,
     batch_code: batchCode
   };
 
