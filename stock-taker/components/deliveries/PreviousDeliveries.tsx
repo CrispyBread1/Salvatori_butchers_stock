@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Product } from '@/models/Product';
 import { Delivery } from '@/models/Delivery';
+import { Colors } from '@/constants/Colors';
 
 interface PreviousDeliveriesProps {
   deliveries: Delivery[];
@@ -42,13 +43,10 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
       const created_at =  new Date(delivery.created_at).toLocaleString()
       return (
         product?.name.toLowerCase().includes(query) ||
-        delivery.driver_name?.toLowerCase().includes(query) ||
-        delivery.license_plate?.toLowerCase().includes(query) ||
+        delivery.supplier?.toLowerCase().includes(query) ||
         delivery.batch_code?.toString().includes(query) ||
         delivery.quantity?.toString().includes(query) ||
-        delivery.product_temp?.toString().includes(query) ||
         delivery.date?.toString().includes(query)
-       
       );
     });
     var sorted_matches = sortDeliveriesByDate(matches)
@@ -247,6 +245,7 @@ export default PreviousDeliveries;
 const styles = StyleSheet.create({
   container: {
     width: '90%',
+    height: '80%',
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
@@ -302,7 +301,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   tableData: {
-    maxHeight: 400,
+    height: '73%',
   },
   tableRow: {
     flexDirection: 'row',
@@ -359,7 +358,7 @@ const styles = StyleSheet.create({
   navButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.buttons.primary,
     borderRadius: 6,
     minWidth: 80,
     alignItems: 'center',
@@ -385,7 +384,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activePageButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.buttons.primary,
   },
   pageButtonText: {
     fontSize: 14,

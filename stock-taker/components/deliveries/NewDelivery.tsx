@@ -70,9 +70,9 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   
   // Fixed batch code function - accept the fetched code as parameter
   const handleDeliveryBatchCode = (prevCode = previousDeliveryCode) => {
-    console.log('handleDeliveryBatchCode is being run');
-    console.log('previous delivery code:', prevCode);
-    console.log('current batch code:', batchCode);
+    // console.log('handleDeliveryBatchCode is being run');
+    // console.log('previous delivery code:', prevCode);
+    // console.log('current batch code:', batchCode);
   
     // Only set batch code if it's empty
     if (batchCode === '') {
@@ -179,34 +179,10 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
   };
 
   const handleUseByDate = () => {
-    if (!useByDateDay.trim()) {
-      Alert.alert('Error', 'Please fill in the use by date day');
-      return;
-    }
-    if (!useByDateMonth.trim()) {
-      Alert.alert('Error', 'Please fill in the use by date month');
-      return;
-    }
-    if (!useByDateYear.trim()) {
-      Alert.alert('Error', 'Please fill in the use by date year');
-      return;
-    }
     setUseByDate(new Date(parseInt(useByDateDay), parseInt(useByDateMonth), parseInt(useByDateYear)))
   }
 
   const handleKillDate = () => {
-    if (!killDateDay.trim()) {
-      Alert.alert('Error', 'Please fill in the kill date day');
-      return;
-    }
-    if (!killDateMonth.trim()) {
-      Alert.alert('Error', 'Please fill in the kill date month');
-      return;
-    }
-    if (!killDateYear.trim()) {
-      Alert.alert('Error', 'Please fill in the kill date year');
-      return;
-    }
     setKillDate(new Date(parseInt(killDateDay), parseInt(killDateMonth), parseInt(killDateYear)))
   }
 
@@ -354,8 +330,7 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
           </View>
         </View>
       )}
-
-      {!selectedProduct && <Button title="Back" onPress={handleCancel}/>}
+      
     </View>
   );
 };
