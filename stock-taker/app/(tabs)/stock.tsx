@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import StockTakeForm from '@/components/stockTake/StockTakeForm';
 import { submitStockTakeEntry } from '@/utils/stockTakes';
 import { updateProductStocks } from '@/utils/products';
+import { Colors } from '@/constants/Colors';
 
 interface Product {
   id: number;
@@ -113,9 +114,9 @@ export default function StockScreen() {
     <View style={styles.container}>
       {!category && (
         <View style={styles.buttonWrapper}>
-          <Button title="Fresh" onPress={handleFreshCategory} />
-          <Button title="Frozen" onPress={handleFrozenCategory} />
-          <Button title="Dry" onPress={handleDryCategory} />
+          <Button  color={ Colors.buttons.primary } title="Fresh" onPress={handleFreshCategory} />
+          <Button  color={ Colors.buttons.primary } title="Frozen" onPress={handleFrozenCategory} />
+          <Button  color={ Colors.buttons.primary } title="Dry" onPress={handleDryCategory} />
         </View>
       )}
 

@@ -2,6 +2,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/Colors';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -18,22 +19,22 @@ export default function HomeScreen() {
           <View style={styles.top}>
             <Text style={styles.welcome}>Welcome, {user.name}!</Text>
             <View style={styles.buttonWrapper}>
-              <Button title="Stock Taking" onPress={() => router.push('/stock')} />
-              <Button title="Deliveries" onPress={() => router.push('/deliveries')} />
-              <Button title="Conversions" onPress={() => router.push('/conversions')} />
+              <Button color={ Colors.buttons.primary } title="Stock Taking" onPress={() => router.push('/stock')} />
+              <Button color={ Colors.buttons.primary } title="Deliveries" onPress={() => router.push('/deliveries')} />
+              <Button color={ Colors.buttons.primary } title="Conversions" onPress={() => router.push('/conversions')} />
             </View>
           </View>
 
           <View style={styles.spacer} />
 
           <View style={styles.bottom}>
-            <Button title="Logout" onPress={handleLogout} />
+            <Button  color={ Colors.buttons.primary } title="Logout" onPress={handleLogout} />
           </View>
         </>
       ) : (
         <>
           <Text style={styles.welcome}>Welcome, Please log in to continue</Text>
-          <Button title="Login" onPress={() => router.push('/login')} />
+          <Button  color={ Colors.buttons.primary } title="Login" onPress={() => router.push('/login')} />
         </>
       )}
     </View>

@@ -3,6 +3,7 @@ import { View, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { supabase } from '@/utils/supabaseClient';
 import { router } from 'expo-router';
 import { insertUser } from '@/utils/users';
+import { Colors } from '@/constants/Colors';
 
 export default function LoginScreen() {
   const [fullName, setFullName] = useState('');
@@ -67,7 +68,7 @@ export default function LoginScreen() {
       <TextInput placeholder="Confirm your Email" value={emailConfirm} onChangeText={setEmailConfirm} style={styles.input} />
       <TextInput placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} style={styles.input} />
       <TextInput placeholder="Confirm your Password" secureTextEntry value={passwordConfirm} onChangeText={setPasswordConfirm} style={styles.input} />
-      <Button title="Sign Up" onPress={handleSignUp} />
+      <Button color={ Colors.buttons.primary } title="Sign Up" onPress={handleSignUp} />
     </View>
   );
 }

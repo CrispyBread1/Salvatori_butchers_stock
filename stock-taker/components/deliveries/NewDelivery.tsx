@@ -6,7 +6,7 @@ import { submitDelivery, fetchPreviousDeliveryCode } from '@/utils/delivery';
 import { SupabaseUser } from '@/models/User';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import RadioButtonGroup from '../reusable/RadioButtons';
-import { Delivery } from '@/models/Delivery';
+import { Colors } from '@/constants/Colors';
 
 interface NewDeliveryProps {
   visible: boolean;
@@ -280,19 +280,27 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
             {selectedProduct.name}
           </Text>
           <View>
-            <TextInput placeholder="Cases" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
-            <TextInput placeholder="Supplier" value={supplier} onChangeText={setSupplier} style={styles.input} />
-            <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
-            <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
-            <TextInput placeholder="Van Temp."  value={vanTemperature} keyboardType="decimal-pad" onChangeText={setVanTemperature} style={styles.input} />
-            <TextInput placeholder="Product Temp."  value={productTemperature} keyboardType="decimal-pad" onChangeText={setProductTemperature} style={styles.input} />
-            <TextInput placeholder="Slaughter No."  value={slaughterNumber} onChangeText={setSlaughterNumber} style={styles.input} />
-            <TextInput placeholder="Cut No."  value={cutNumber} keyboardType="decimal-pad" onChangeText={setCutNumber} style={styles.input} />
-            <TextInput placeholder="Origin"  value={origin} keyboardType="decimal-pad" onChangeText={setOrigin} style={styles.input} />
-            {user.admin && (
-            <TextInput placeholder="Batch Code"  value={batchCode} keyboardType="decimal-pad" onChangeText={setBatchCode} style={styles.input} />
-            )}
-
+            <View style={ styles.inputContainer }>
+              <TextInput placeholder="Cases" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
+              <TextInput placeholder="Supplier" value={supplier} onChangeText={setSupplier} style={styles.input} />
+            </View>
+            <View style={ styles.inputContainer }>
+              <TextInput placeholder="Driver Name" value={driverName} onChangeText={setDriverName} style={styles.input} />
+              <TextInput placeholder="License Plate"  value={licensePlate} onChangeText={setLicensePlate} style={styles.input} />
+            </View>
+            <View style={ styles.inputContainer }>
+              <TextInput placeholder="Van Temp."  value={vanTemperature} keyboardType="decimal-pad" onChangeText={setVanTemperature} style={styles.input} />
+              <TextInput placeholder="Product Temp."  value={productTemperature} keyboardType="decimal-pad" onChangeText={setProductTemperature} style={styles.input} />
+            </View>
+            <View style={ styles.inputContainer }>
+              <TextInput placeholder="Slaughter No."  value={slaughterNumber} onChangeText={setSlaughterNumber} style={styles.input} />
+              <TextInput placeholder="Cut No."  value={cutNumber} keyboardType="decimal-pad" onChangeText={setCutNumber} style={styles.input} />
+            </View>
+            <View style={ styles.inputContainer }>
+              <TextInput placeholder="Origin"  value={origin} keyboardType="decimal-pad" onChangeText={setOrigin} style={styles.input} />
+              <TextInput placeholder="Batch Code"  value={batchCode} keyboardType="decimal-pad" onChangeText={setBatchCode} style={styles.input} />
+            </View>
+            
             <Text style={ styles.inputHeader }>
                 Use by
             </Text>
@@ -321,10 +329,10 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
               onValueChange={setSelectedRTrOA}
             />
 
-            <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.input} />
+            <TextInput placeholder="Notes"  value={notes} onChangeText={setNotes} style={styles.noteInput} />
           </View>
           {user.admin && (
-            <Button title="Select Deliver Date" onPress={handleDeliveryDate} />
+            <Button  color={ Colors.buttons.primary } title="Select Deliver Date" onPress={handleDeliveryDate} />
           )}
           {showDatePicker && (
             <DateTimePicker
@@ -358,6 +366,8 @@ const styles = StyleSheet.create({
   container: {
     width: '70%',
     gap: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
   },
   date: {
     fontSize: 30,
@@ -370,6 +380,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   input: {
+    width: '48%',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
@@ -377,8 +388,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
     textAlign: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.theme.backgroundPrimary,
+    marginBottom: 15,
+    color: Colors.input.textPrimary
+  },
+  noteInput: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    textAlign: 'center',
+    backgroundColor: Colors.theme.backgroundPrimary,
     marginBottom: 15
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+  },
+  column: {
+    flex: 1,
+    paddingHorizontal: 5,
   },
   submitButton: {
     flex: 2,
@@ -413,7 +446,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between', // This spreads them across the width
     alignItems: 'center',
-    marginBottom: 15
+    marginBottom: 15,
   },
   dateInputField: {
     borderWidth: 1,
@@ -423,7 +456,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
     textAlign: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.theme.backgroundPrimary,
     flex: 1, // Each takes equal space
     marginHorizontal: 5, // Small gap between inputs
   },
@@ -431,6 +464,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     marginLeft: 10, 
     fontSize: 16,
-
-  }
+  },
+  
 });

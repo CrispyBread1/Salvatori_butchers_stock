@@ -9,6 +9,7 @@ import { getAllDeliveries } from '@/utils/delivery';
 import { Delivery } from '@/models/Delivery';
 import PreviousDeliveries from '@/components/deliveries/PreviousDeliveries';
 import NewDelivery from '@/components/deliveries/NewDelivery';
+import { Colors } from '@/constants/Colors';
 
 export default function DeliveriesScreen() {
   const { user } = useAuth();
@@ -90,7 +91,7 @@ export default function DeliveriesScreen() {
     <View style={styles.container}>
       {(!newDelivery) && (
         <View style={styles.buttonWrapper}>
-          <Button title="New" onPress={handleNewDelivery} />
+          <Button color={ Colors.buttons.primary } title="New" onPress={handleNewDelivery} />
         </View>
       )}
 

@@ -12,6 +12,7 @@ import { Conversion } from '@/models/Conversion';
 import ActiveConversions from '@/components/conversions/ActiveConversions';
 import { ConversionItem } from '@/models/ConversionItem';
 import ConversionDetails from '@/components/conversions/ConversionDetails';
+import { Colors } from '@/constants/Colors';
 
 export default function Conversions() {
   const { user } = useAuth();
@@ -248,12 +249,12 @@ export default function Conversions() {
 
   return (
     <View style={styles.container}>
-       {(!newConversion && !activeConversionSelected) && <Button title="New Conversion" onPress={handleNewConversion} />}
+       {(!newConversion && !activeConversionSelected) && <Button color={ Colors.buttons.primary } title="New Conversion" onPress={handleNewConversion} />}
       {(newConversion && !barcodeScan && !enterManually && !conversionSelected && !showConversionDetails) && (
         <View style={styles.buttonWrapper}>
-          <Button title="Scan Barcode" onPress={handleScanBarcode} />
-          <Button title="Enter Manually" onPress={handleEnterManually} />
-          <Button title="Cancel" onPress={handleUIReset} />
+          <Button color={ Colors.buttons.primary } title="Scan Barcode" onPress={handleScanBarcode} />
+          <Button color={ Colors.buttons.primary } title="Enter Manually" onPress={handleEnterManually} />
+          <Button color={ Colors.buttons.primary } title="Cancel" onPress={handleUIReset} />
         </View>
       )}
       {(barcodeScan || enterManually) && (
@@ -274,11 +275,11 @@ export default function Conversions() {
                 Selected Product: {selectedProduct.name}
               </Text>
               <TextInput placeholder="Quantity (kg)" value={quantity} keyboardType="decimal-pad" onChangeText={setQuantity} style={styles.input} />
-              <Button title="Start" onPress={handleConversionStart} />
+              <Button color={ Colors.buttons.primary } title="Start" onPress={handleConversionStart} />
             </View>
           )}
 
-         {!selectedProduct && <Button title="Back" onPress={handleUIReset} />}
+         {!selectedProduct && <Button color={ Colors.buttons.primary } title="Back" onPress={handleUIReset} />}
         </View>
       )}
 
