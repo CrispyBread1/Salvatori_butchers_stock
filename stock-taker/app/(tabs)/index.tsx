@@ -21,7 +21,7 @@ export default function HomeScreen() {
             <View style={styles.buttonWrapper}>
               <Button color={ Colors.buttons.primary } title="Stock Taking" onPress={() => router.push('/stock')} />
               <Button color={ Colors.buttons.primary } title="Deliveries" onPress={() => router.push('/deliveries')} />
-              <Button color={ Colors.buttons.primary } title="Conversions" onPress={() => router.push('/conversions')} />
+              {/* <Button color={ Colors.buttons.primary } title="Conversions" onPress={() => router.push('/conversions')} /> */}
             </View>
           </View>
 
