@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { Product } from '@/models/Product'; 
+import { Colors } from '@/constants/Colors';
 
 interface ProductPickerProps {
   visible: boolean;
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
   },
   pageButton: {
     padding: 10,
-    backgroundColor: '#007bff',
+    backgroundColor: Colors.buttons.primary,
     borderRadius: 5,
   },
   disabledButton: {
@@ -177,6 +178,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     marginTop: 15,
     alignSelf: 'center',
+    backgroundColor: Colors.buttons.primary
   },
   cancelButtonText: {
     color: '#fa4352',

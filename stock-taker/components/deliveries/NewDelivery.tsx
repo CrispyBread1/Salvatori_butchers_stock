@@ -294,10 +294,10 @@ const NewDelivery: React.FC<NewDeliveryProps> = ({
             </View>
             <View style={ styles.inputContainer }>
               <TextInput placeholder="Slaughter No."  value={slaughterNumber} onChangeText={setSlaughterNumber} style={styles.input} />
-              <TextInput placeholder="Cut No."  value={cutNumber} keyboardType="decimal-pad" onChangeText={setCutNumber} style={styles.input} />
+              <TextInput placeholder="Cut No."  value={cutNumber} onChangeText={setCutNumber} style={styles.input} />
             </View>
             <View style={ styles.inputContainer }>
-              <TextInput placeholder="Origin"  value={origin} keyboardType="decimal-pad" onChangeText={setOrigin} style={styles.input} />
+              <TextInput placeholder="Origin"  value={origin} onChangeText={setOrigin} style={styles.input} />
               <TextInput placeholder="Batch Code"  value={batchCode} keyboardType="decimal-pad" onChangeText={setBatchCode} style={styles.input} />
             </View>
             

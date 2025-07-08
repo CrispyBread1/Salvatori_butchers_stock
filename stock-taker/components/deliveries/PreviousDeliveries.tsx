@@ -47,13 +47,20 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
         delivery.batch_code?.toString().includes(query) ||
         delivery.quantity?.toString().includes(query) ||
         delivery.product_temp?.toString().includes(query) ||
-        created_at.toLowerCase().includes(query)
+        delivery.date?.toString().includes(query)
        
       );
     });
-    setFiltered(matches);
+    var sorted_matches = sortDeliveriesByDate(matches)
+    setFiltered(sorted_matches);
     setCurrentPage(1); // reset to first page on search
   }, [searchQuery, deliveries, products]);
+
+  const sortDeliveriesByDate = (deliveries: Delivery[]): Delivery[] => {
+    return deliveries.sort((a, b) => {
+      return b.date.localeCompare(a.date); // newest first
+    });
+  };
 
   // Calculate pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -114,13 +121,12 @@ const PreviousDeliveries: React.FC<PreviousDeliveriesProps> = ({
 
   const renderDeliveryRow = ({ item }: { item: Delivery }) => {
     const deliveryProduct = getDeliveryProduct(item.product);
-    const deliveryDate = new Date(item.created_at).toLocaleString()
     
     return (
       <View style={styles.tableRow}>
         <View style={styles.tableCell}>
           <Text style={styles.boldText}>{item.batch_code}</Text>
-          <Text style={styles.statusText}>Date: {deliveryDate}</Text>
+          <Text style={styles.statusText}>Date: {item.date}</Text>
         </View>
         <View style={styles.tableCell}>
           <Text style={styles.boldText}>{deliveryProduct?.name}</Text>
